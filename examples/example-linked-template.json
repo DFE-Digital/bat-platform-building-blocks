@@ -81,7 +81,7 @@
                         "value": [
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                "value": "[reference('AppInsights').outputs.InstrumentationKey.value]"
+                                "value": "[reference('app-insights').outputs.InstrumentationKey.value]"
                             }
                         ]
                     }
@@ -93,7 +93,7 @@
         },
         {
             "apiVersion": "2017-05-10",
-            "name": "AppInsights",
+            "name": "app-insights",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
