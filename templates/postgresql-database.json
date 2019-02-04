@@ -1,0 +1,49 @@
+{
+"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+"postgresServerName": {
+"type": "string",
+"metadata": {
+"description": "Name of the PostgreSQL server"
+}
+},
+"postgresSku": {
+"type": "object",
+"defaultValue": {
+"name": "GP_Gen5_2",
+"tier": "GeneralPurpose",
+"size": 5120,
+"family": "Gen5",
+"capacity": 2
+}
+},
+"postgresAdminLogin": {
+"type": "string"
+},
+"postgresAdminPassword": {
+"type": "securestring"
+},
+"postgresDatabases": {
+"type": "array",
+"defaultValue": []
+}
+},
+"variables": {},
+"resources": [
+{
+"name": "[concat(parameters('postgresServerName'), '/', parameters('postgresDatabases')[copyIndex()])]",
+"apiVersion": "2017-12-01",
+"type": "Microsoft.DBforPostgreSQL/servers/databases",
+"properties":{},
+"copy": {
+"name": "databaseCopy",
+"count": "[length(parameters('postgresDatabases'))]"
+},
+"dependsOn": [
+"[parameters('postgresServerName')]"
+]
+}
+],
+"outputs": {}
+}
