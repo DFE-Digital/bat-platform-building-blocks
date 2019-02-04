@@ -62,7 +62,7 @@
             "kind": "[parameters('appServicePlanOS')]",
             "properties": {
                 "name": "[parameters('appServicePlanName')]",
-                "reserved": "[if(equals(tolower(parameters('appServicePlanOS')), 'linux'), bool('true'), bool('false'))]"
+                "reserved": "[equals(tolower(parameters('appServicePlanOS')), 'linux')]"
             }
         }
     ],
