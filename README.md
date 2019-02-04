@@ -15,18 +15,8 @@ $DeploymentParameters = @{
     AppServiceName = "xxx-dev-as"
     AppServicePlanName = "xxx-dev-asp"
     TrafficManagerProfileName = "xxx-dev-tmp"
-    TrafficManagerEndpointName = "xxx-dev-tme"
+    TrafficManagerEndpointName = "xxx-dev-as"
     TrafficManagerEndpointPriority = 1
-
-    ContainerRegistryName = "cccdevcr"
-    ContainerRegistryPassword = "xxxxxxxxxxxxx"
-    ContainerImageReference = "image:tag"
-
-    DfESignInIssuer = "PLACEHOLDER"
-    DfESignInIdentifier = "PLACEHOLDER"
-    DfESignInSecret = "PLACEHOLDER"
-    DfESignInProfile = "PLACEHOLDER"
-    SiteBaseUrl = "PLACEHOLDER"
 }
 
 New-AzResourceGroupDeployment -Name "deployment-01" -ResourceGroupName $ResourceGroupName -TemplateFile .\examples\example-linked-template.json @DeploymentParameters
@@ -36,5 +26,17 @@ New-AzResourceGroupDeployment -Name "deployment-01" -ResourceGroupName $Resource
 Use the following to deploy the example linked template with Az cli.
 
 ```Bash
-TBA
+#!/bin/bash
+RESOURCEGROUPNAME="xxx-dev-rg"
+LOCATION="westeurope"
+
+az group create --name $RESOURCEGROUPNAME --location $LOCATION
+
+az group deployment create --resource-group $RESOURCEGROUPNAME \
+                           --template-file './examples/example-linked-template.json' \
+                           --parameters appServiceName="xxx-dev-as" \
+                                        appServicePlanName="xx-dev-asp" \
+                                        trafficManagerProfileName="xxx-dev-tmp" \
+                                        trafficManagerEndpointName="xxx-dev-as" \
+                                        trafficManagerEndpointPriority=1
 ```
