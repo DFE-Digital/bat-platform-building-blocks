@@ -58,7 +58,6 @@
                     "alwaysOn": true,
                     "appSettings": "[parameters('appServiceAppSettings')]",
                     "connectionStrings": "[parameters('appServiceConnectionStrings')]"
-
                 }
             },
             "resources": [
