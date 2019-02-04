@@ -35,6 +35,10 @@
         },
         "appServicePlanOS": {
             "type": "string",
+            "allowedValues":[
+                "Windows",
+                "Linux"
+            ],
             "defaultValue": "Linux",
             "metadata": {
                 "description": "Windows or Linux"
