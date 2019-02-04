@@ -1,3 +1,4 @@
+[![Build Status](https://dfe-ssp.visualstudio.com/Become-A-Teacher/_apis/build/status/bat-platform-building-blocks?branchName=master)](https://dfe-ssp.visualstudio.com/Become-A-Teacher/_build/latest?definitionId=45&branchName=master)
 # bat-platform-building-blocks
 The templates provided in this repository are designed to provide a level of standardised configurations across
 one or more application in a service.
