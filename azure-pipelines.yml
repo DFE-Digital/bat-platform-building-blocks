@@ -13,7 +13,7 @@ steps:
   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
   inputs:
     Contents: |
-     templates\**
+     templates/**
     TargetFolder: '$(build.artifactstagingdirectory)/publish'
     OverWrite: true
 
