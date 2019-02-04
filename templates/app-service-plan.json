@@ -45,9 +45,7 @@
             }
         }
     },
-    "variables": {
-        "linux": true
-    },
+    "variables": {},
     "resources": [
         {
             "type": "Microsoft.Web/serverfarms",
@@ -64,7 +62,7 @@
             "kind": "[parameters('appServicePlanOS')]",
             "properties": {
                 "name": "[parameters('appServicePlanName')]",
-                "reserved": "[if(equals(tolower(parameters('appServicePlanOS')), 'linux'), variables('linux'), bool('false'))]"
+                "reserved": "[if(equals(tolower(parameters('appServicePlanOS')), 'linux'), bool('true'), bool('false'))]"
             }
         }
     ],
