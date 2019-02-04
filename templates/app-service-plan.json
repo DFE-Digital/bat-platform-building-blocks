@@ -1,0 +1,70 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appServicePlanName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the App Service Plan"
+            }
+        },
+        "appServicePlanTier": {
+            "type": "string",
+            "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium"
+            ],
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The tier to use when building the App Service Plan"
+            }
+        },
+        "appServicePlanSize": {
+            "type": "string",
+            "allowedValues": [
+                "1",
+                "2",
+                "3"
+            ],
+            "defaultValue": "1"
+        },
+        "appServicePlanInstances": {
+            "type": "int",
+            "defaultValue": 1
+        },
+        "appServicePlanOS": {
+            "type": "string",
+            "allowedValues":[
+                "Windows",
+                "Linux"
+            ],
+            "defaultValue": "Linux",
+            "metadata": {
+                "description": "Windows or Linux"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "name": "[parameters('appServicePlanName')]",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[concat(take(parameters('appServicePlanTier'), 1), parameters('appServicePlanSize'))]",
+                "tier": "[parameters('appServicePlanTier')]",
+                "size": "[concat(take(parameters('appServicePlanTier'), 1), parameters('appServicePlanSize'))]",
+                "family": "[take(parameters('appServicePlanTier'), 1)]",
+                "capacity": "[parameters('appServicePlanInstances')]"
+            },
+            "kind": "[parameters('appServicePlanOS')]",
+            "properties": {
+                "name": "[parameters('appServicePlanName')]",
+                "reserved": "[equals(tolower(parameters('appServicePlanOS')), 'linux')]"
+            }
+        }
+    ],
+    "outputs": {}
+}
