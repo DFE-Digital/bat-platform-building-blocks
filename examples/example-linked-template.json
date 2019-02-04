@@ -34,7 +34,7 @@
         }
     },
     "variables": {
-        "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/Create_a_set_of_common_base_templates/templates/"
+        "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/"
     },
     "resources": [
         {
