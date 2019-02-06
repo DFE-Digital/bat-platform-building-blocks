@@ -64,7 +64,8 @@
                     "alwaysOn": true,
                     "appSettings": "[parameters('appServiceAppSettings')]",
                     "connectionStrings": "[parameters('appServiceConnectionStrings')]"
-                }
+                },
+                "httpsOnly": true
             },
             "resources": [
                 {
@@ -77,8 +78,11 @@
                         "serverFarmId": "[variables('appServicePlanId')]",
                         "siteConfig": {
                             "alwaysOn": false,
-                            "linuxFxVersion": "[parameters('runtimeStack')]"
-                        }
+                            "linuxFxVersion": "[parameters('runtimeStack')]",
+                            "appSettings": "[parameters('appServiceAppSettings')]",
+                            "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+                        },
+                        "httpsOnly": true
                     },
                     "dependsOn": [
                         "[parameters('appServiceName')]"
