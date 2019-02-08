@@ -12,19 +12,11 @@
             "type": "string",
             "metadata": {
                 "description": "Name of the database that will be associated with the PostgreSQL server instance."
-            }        }
+            }
+        }
     },
     "variables": {},
     "resources": [
-        {
-            "name": "string",
-            "type": "Microsoft.DBforPostgreSQL/servers/databases",
-            "apiVersion": "2017-12-01",
-            "properties": {
-              "charset": "string",
-              "collation": "string"
-            }
-          },
         {
             "apiVersion": "2017-12-01",
             "name": "[concat(parameters('serverName'), '/', parameters('databaseName'))]",
