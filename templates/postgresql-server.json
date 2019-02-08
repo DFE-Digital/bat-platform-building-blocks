@@ -51,24 +51,34 @@
                 "sslEnforcement": "Enabled",
                 "administratorLogin": "[parameters('postgresAdminLogin')]",
                 "administratorLoginPassword": "[parameters('postgresAdminPassword')]"
-            }
-        },
-        {
-            "name": "[variables('securityAlertPolicyName')]",
-            "type": "Microsoft.DBforPostgreSQL/servers/securityAlertPolicies",
-            "apiVersion": "2017-12-01",
-            "properties": {
-                "state": "Enabled",
-                "disabledAlerts": [],
-                "emailAddresses": [
-                    "[parameters('securityAlertEmailAddress')]"
-                ],
-                "emailAccountAdmins": false,
-                "retentionDays": 90,
-                "storageEndpoint": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/')]",
-                "storageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
-            }
+            },
+            "resources": [
+                {
+                    "name": "[variables('securityAlertPolicyName')]",
+                    "type": "securityAlertPolicies",
+                    "apiVersion": "2017-12-01",
+                    "properties": {
+                        "state": "Enabled",
+                        "disabledAlerts": [],
+                        "emailAddresses": [
+                            "[parameters('securityAlertEmailAddress')]"
+                        ],
+                        "emailAccountAdmins": false,
+                        "retentionDays": 90,
+                        "storageEndpoint": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/')]",
+                        "storageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+                    },
+                    "dependsOn": [
+                        "[parameters('postgresServerName')]"
+                    ]
+                }
+            ]
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "fullyQualifiedDomainName": {
+            "type": "string",
+            "value": "[reference(parameters('postgresServerName')).fullyQualifiedDomainName]"
+        }
+    }
 }
