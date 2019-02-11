@@ -42,6 +42,17 @@
         "deployStagingSlot": {
             "type": "bool",
             "defaultValue": true
+        },
+        "appServiceVirtualApplications": {
+            "type": "array",
+            "defaultValue": [
+                {
+                  "virtualPath": "/",
+                  "physicalPath": "site\\wwwroot",
+                  "preloadEnabled": true,
+                  "virtualDirectories": null
+                }
+            ]
         }
     },
     "variables": {
@@ -61,7 +72,8 @@
                 "siteConfig": {
                     "alwaysOn": true,
                     "appSettings": "[parameters('appServiceAppSettings')]",
-                    "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+                    "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+                    "virtualApplications": "[parameters('appServiceVirtualApplications')]"
                 }
             },
             "resources": [
@@ -78,7 +90,8 @@
                         "siteConfig": {
                             "alwaysOn": true,
                             "appSettings": "[parameters('appServiceAppSettings')]",
-                            "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+                            "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+                            "virtualApplications": "[parameters('appServiceVirtualApplications')]"
                         }
                     },
                     "dependsOn": [
