@@ -1,46 +1,46 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "profileName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the traffic manager profile"
-            }
-        },
-        "endpointName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the traffic manager endpoint"
-            }
-        },
-        "appServiceName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the app service to link to the endpoint"
-            }
-        },
-        "priority": {
-            "type": "int",
-            "minValue": 1,
-            "maxValue": 1000,
-            "metadata": {
-                "description": "The priority of this endpoint when using the 'Priority' traffic routing method. "
-            }
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "profileName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the traffic manager profile"
+      }
     },
-    "variables": {},
-    "resources": [
-        {
-            "apiVersion": "2018-04-01",
-            "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
-            "location": "global",
-            "name": "[concat(parameters('profileName'), '/', parameters('endpointName'))]",
-            "properties": {
-                "targetResourceId": "[resourceId('Microsoft.Web/sites/', concat(parameters('appServiceName')))]",
-                "endpointStatus": "Enabled",
-                "priority": "[parameters('priority')]"
-            }
-        }
-    ]
+    "endpointName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the traffic manager endpoint"
+      }
+    },
+    "appServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the app service to link to the endpoint"
+      }
+    },
+    "priority": {
+      "type": "int",
+      "minValue": 1,
+      "maxValue": 1000,
+      "metadata": {
+        "description": "The priority of this endpoint when using the 'Priority' traffic routing method. "
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+      "location": "global",
+      "name": "[concat(parameters('profileName'), '/', parameters('endpointName'))]",
+      "properties": {
+        "targetResourceId": "[resourceId('Microsoft.Web/sites/', concat(parameters('appServiceName')))]",
+        "endpointStatus": "Enabled",
+        "priority": "[parameters('priority')]"
+      }
+    }
+  ]
 }

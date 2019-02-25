@@ -1,165 +1,165 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "appServiceName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the app service."
-            }
-        },
-        "appServicePlanName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the app service plan."
-            }
-        },
-        "trafficManagerProfileName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the traffic manager profile."
-            }
-        },
-        "trafficManagerEndpointName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the traffic manager endpoint."
-            }
-        },
-        "trafficManagerEndpointPriority": {
-            "type": "int",
-            "metadata": {
-                "description": "The priority of the traffic manger endpoint."
-            }
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the app service."
+      }
     },
-    "variables": {
-        "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/"
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the app service plan."
+      }
     },
-    "resources": [
-        {
-            "name": "app-service-plan",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('templateBaseUrl'), 'app-service-plan.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appServicePlanName": {
-                        "value": "[parameters('appServicePlanName')]"
-                    },
-                    "appServicePlanOS": {
-                        "value": "Windows"
-                    }
-                }
-            }
+    "trafficManagerProfileName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the traffic manager profile."
+      }
+    },
+    "trafficManagerEndpointName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the traffic manager endpoint."
+      }
+    },
+    "trafficManagerEndpointPriority": {
+      "type": "int",
+      "metadata": {
+        "description": "The priority of the traffic manger endpoint."
+      }
+    }
+  },
+  "variables": {
+    "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/"
+  },
+  "resources": [
+    {
+      "name": "app-service-plan",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'app-service-plan.json')]",
+          "contentVersion": "1.0.0.0"
         },
-        {
-            "name": "app-service",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('templateBaseUrl'), 'app-service-windows.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appServiceName": {
-                        "value": "[parameters('appServiceName')]"
-                    },
-                    "appServicePlanResourceGroup": {
-                        "value": "[resourceGroup().name]"
-                    },
-                    "appServicePlanName": {
-                        "value": "[parameters('appServicePlanName')]"
-                    },
-                    "appServiceAppSettings": {
-                        "value": [
-                            {
-                                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                "value": "[reference('app-insights').outputs.InstrumentationKey.value]"
-                            }
-                        ]
-                    }
-                }
-            },
-            "dependsOn": [
-                "app-service-plan"
-            ]
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "app-insights",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('templateBaseUrl'), 'application-insights.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appInsightsName": {
-                        "value": "[parameters('appServiceName')]"
-                    },
-                    "attachedService": {
-                        "value": "[parameters('appServiceName')]"
-                    }
-                }
-            }
-        },
-        {
-            "name": "traffic-manager-profile",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('templateBaseUrl'), 'traffic-manager-profile.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "profileName": {
-                        "value": "[parameters('trafficManagerProfileName')]"
-                    }
-                }
-            },
-            "dependsOn": [
-                "app-service"
-            ]
-        },
-        {
-            "name": "traffic-manager-endpoint",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(variables('templateBaseUrl'), 'traffic-manager-azure-endpoint.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "profileName": {
-                        "value": "[parameters('trafficManagerProfileName')]"
-                    },
-                    "endpointName": {
-                        "value": "[parameters('trafficManagerEndpointName')]"
-                    },
-                    "appServiceName": {
-                        "value": "[parameters('appServiceName')]"
-                    },
-                    "priority": {
-                        "value": "[parameters('trafficManagerEndpointPriority')]"
-                    }
-                }
-            },
-            "dependsOn": [
-                "traffic-manager-profile"
-            ]
+        "parameters": {
+          "appServicePlanName": {
+            "value": "[parameters('appServicePlanName')]"
+          },
+          "appServicePlanOS": {
+            "value": "Windows"
+          }
         }
-    ],
-    "outputs": {}
+      }
+    },
+    {
+      "name": "app-service",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'app-service-windows.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appServiceName": {
+            "value": "[parameters('appServiceName')]"
+          },
+          "appServicePlanResourceGroup": {
+            "value": "[resourceGroup().name]"
+          },
+          "appServicePlanName": {
+            "value": "[parameters('appServicePlanName')]"
+          },
+          "appServiceAppSettings": {
+            "value": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference('app-insights').outputs.InstrumentationKey.value]"
+              }
+            ]
+          }
+        }
+      },
+      "dependsOn": [
+        "app-service-plan"
+      ]
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "app-insights",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'application-insights.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appInsightsName": {
+            "value": "[parameters('appServiceName')]"
+          },
+          "attachedService": {
+            "value": "[parameters('appServiceName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "traffic-manager-profile",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'traffic-manager-profile.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "profileName": {
+            "value": "[parameters('trafficManagerProfileName')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "app-service"
+      ]
+    },
+    {
+      "name": "traffic-manager-endpoint",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'traffic-manager-azure-endpoint.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "profileName": {
+            "value": "[parameters('trafficManagerProfileName')]"
+          },
+          "endpointName": {
+            "value": "[parameters('trafficManagerEndpointName')]"
+          },
+          "appServiceName": {
+            "value": "[parameters('appServiceName')]"
+          },
+          "priority": {
+            "value": "[parameters('trafficManagerEndpointPriority')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "traffic-manager-profile"
+      ]
+    }
+  ],
+  "outputs": {}
 }
