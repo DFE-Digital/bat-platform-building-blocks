@@ -47,10 +47,10 @@
             "type": "array",
             "defaultValue": [
                 {
-                  "virtualPath": "/",
-                  "physicalPath": "site\\wwwroot",
-                  "preloadEnabled": true,
-                  "virtualDirectories": null
+                    "virtualPath": "/",
+                    "physicalPath": "site\\wwwroot",
+                    "preloadEnabled": true,
+                    "virtualDirectories": null
                 }
             ]
         }
@@ -115,5 +115,10 @@
             ]
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "possibleOutboundIpAddresses": {
+            "type": "array",
+            "value": "[split(reference(parameters('appServiceName')).possibleOutboundIpAddresses, ',')]"
+        }
+    }
 }
