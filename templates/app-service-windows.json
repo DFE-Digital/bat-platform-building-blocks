@@ -1,124 +1,124 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "appServiceName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the App Service"
-            }
-        },
-        "appServicePlanName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the App Service Plan"
-            }
-        },
-        "appServicePlanResourceGroup": {
-            "type": "string",
-            "metadata": {
-                "description": "Resource Group where the ASP lives"
-            }
-        },
-        "appServiceAppSettings": {
-            "type": "array",
-            "defaultValue": []
-        },
-        "appServiceConnectionStrings": {
-            "type": "array",
-            "defaultValue": []
-        },
-        "customHostName": {
-            "type": "string",
-            "defaultValue": ""
-        },
-        "certificateThumbprint": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
-            }
-        },
-        "deployStagingSlot": {
-            "type": "bool",
-            "defaultValue": true
-        },
-        "appServiceVirtualApplications": {
-            "type": "array",
-            "defaultValue": [
-                {
-                    "virtualPath": "/",
-                    "physicalPath": "site\\wwwroot",
-                    "preloadEnabled": true,
-                    "virtualDirectories": null
-                }
-            ]
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App Service"
+      }
     },
-    "variables": {
-        "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'),'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
-        "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]"
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App Service Plan"
+      }
     },
-    "resources": [
+    "appServicePlanResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource Group where the ASP lives"
+      }
+    },
+    "appServiceAppSettings": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "appServiceConnectionStrings": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "customHostName": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "certificateThumbprint": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
+      }
+    },
+    "deployStagingSlot": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "appServiceVirtualApplications": {
+      "type": "array",
+      "defaultValue": [
         {
-            "type": "Microsoft.Web/sites",
-            "name": "[parameters('appServiceName')]",
-            "apiVersion": "2016-08-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "serverFarmId": "[variables('appServicePlanId')]",
-                "clientAffinityEnabled": false,
-                "httpsOnly": true,
-                "siteConfig": {
-                    "alwaysOn": true,
-                    "appSettings": "[parameters('appServiceAppSettings')]",
-                    "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-                    "virtualApplications": "[parameters('appServiceVirtualApplications')]"
-                }
-            },
-            "resources": [
-                {
-                    "condition": "[parameters('deployStagingSlot')]",
-                    "name": "staging",
-                    "type": "slots",
-                    "apiVersion": "2016-08-01",
-                    "location": "[resourceGroup().location]",
-                    "properties": {
-                        "serverFarmId": "[variables('appServicePlanId')]",
-                        "clientAffinityEnabled": false,
-                        "httpsOnly": true,
-                        "siteConfig": {
-                            "alwaysOn": true,
-                            "appSettings": "[parameters('appServiceAppSettings')]",
-                            "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-                            "virtualApplications": "[parameters('appServiceVirtualApplications')]"
-                        }
-                    },
-                    "dependsOn": [
-                        "[parameters('appServiceName')]"
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/hostnameBindings",
-            "condition": "[variables('useCustomHostname')]",
-            "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
-            "apiVersion": "2016-08-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "sslState": "SniEnabled",
-                "thumbprint": "[parameters('certificateThumbprint')]"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
-            ]
+          "virtualPath": "/",
+          "physicalPath": "site\\wwwroot",
+          "preloadEnabled": true,
+          "virtualDirectories": null
         }
-    ],
-    "outputs": {
-        "possibleOutboundIpAddresses": {
-            "type": "array",
-            "value": "[split(reference(parameters('appServiceName')).possibleOutboundIpAddresses, ',')]"
-        }
+      ]
     }
+  },
+  "variables": {
+    "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'),'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+    "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites",
+      "name": "[parameters('appServiceName')]",
+      "apiVersion": "2016-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "serverFarmId": "[variables('appServicePlanId')]",
+        "clientAffinityEnabled": false,
+        "httpsOnly": true,
+        "siteConfig": {
+          "alwaysOn": true,
+          "appSettings": "[parameters('appServiceAppSettings')]",
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+          "virtualApplications": "[parameters('appServiceVirtualApplications')]"
+        }
+      },
+      "resources": [
+        {
+          "condition": "[parameters('deployStagingSlot')]",
+          "name": "staging",
+          "type": "slots",
+          "apiVersion": "2016-08-01",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "serverFarmId": "[variables('appServicePlanId')]",
+            "clientAffinityEnabled": false,
+            "httpsOnly": true,
+            "siteConfig": {
+              "alwaysOn": true,
+              "appSettings": "[parameters('appServiceAppSettings')]",
+              "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+              "virtualApplications": "[parameters('appServiceVirtualApplications')]"
+            }
+          },
+          "dependsOn": [
+            "[parameters('appServiceName')]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites/hostnameBindings",
+      "condition": "[variables('useCustomHostname')]",
+      "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
+      "apiVersion": "2016-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sslState": "SniEnabled",
+        "thumbprint": "[parameters('certificateThumbprint')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "possibleOutboundIpAddresses": {
+      "type": "array",
+      "value": "[split(reference(parameters('appServiceName')).possibleOutboundIpAddresses, ',')]"
+    }
+  }
 }
