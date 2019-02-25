@@ -3,41 +3,111 @@
 The templates provided in this repository are designed to provide a level of standardised configurations across
 one or more application in a service.
 
-## Example deployment with PowerShell
-Use the following to deploy the example linked template with PowerShell.
+## Usage
 
-```PowerShell
-# --- Set resource group name and create
-$ResourceGroupName = "xxx-dev-rg"
-New-AzResourceGroup -Name $ResourceGroupName -Location "West Europe" -Force
+1. Set the root 'Raw' path of the Azure Resource templates as a top-level variable as follows:
 
-# --- Deploy infrastructure
-$DeploymentParameters = @{
-    AppServiceName = "xxx-dev-as"
-    AppServicePlanName = "xxx-dev-asp"
-    TrafficManagerProfileName = "xxx-dev-tmp"
-    TrafficManagerEndpointName = "xxx-dev-as"
-    TrafficManagerEndpointPriority = 1
+```json
+"variables": {
+        "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/bat-platform-building-blocks/master/templates/",
+        ...
 }
-
-New-AzResourceGroupDeployment -Name "deployment-01" -ResourceGroupName $ResourceGroupName -TemplateFile .\examples\example-linked-template.json @DeploymentParameters
 ```
+2. Select the Azure Resource template you wish to use, (eg. https://raw.githubusercontent.com/SkillsFundingAgency/bat-platform-building-blocks/master/templates/app-service.json) by setting the concatenation of the deploymentUrlBase variable and the file name as the uri of the templateLink property as follows:
 
-## Example deployment with Az cli
-Use the following to deploy the example linked template with Az cli.
-
-```Bash
-#!/bin/bash
-RESOURCEGROUPNAME="xxx-dev-rg"
-LOCATION="westeurope"
-
-az group create --name $RESOURCEGROUPNAME --location $LOCATION
-
-az group deployment create --resource-group $RESOURCEGROUPNAME \
-                           --template-file './examples/example-linked-template.json' \
-                           --parameters appServiceName="xxx-dev-as" \
-                                        appServicePlanName="xx-dev-asp" \
-                                        trafficManagerProfileName="xxx-dev-tmp" \
-                                        trafficManagerEndpointName="xxx-dev-as" \
-                                        trafficManagerEndpointPriority=1
+```json
+{
+    "apiVersion": "2017-05-10",
+    "name": "app-service",
+    "type": "Microsoft.Resources/deployments",
+    "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "[concat(variables('deploymentUrlBase'),'app-service.json')]",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+            "parameter1": {
+                "value": "<Your value>"
+            },
+            "parameter2": {
+                "value": "<Your value>"
+            }
+        }
+    },
+    "dependsOn":[
+        "<Any dependencies>"
+    ]
+}
 ```
+## Template file name and location in the application's repository
+
+Name the template as `template.json` and store in a top-level folder named `azure`.
+
+## Branching strategy
+
+1. Always do your work in a new branch.
+
+2. Do not ever commit straight to master.
+
+3. Submit a pull request to the team when you are ready for review.
+
+4. After the pull request is approved and the branch merged to master, delete the branch you made.
+
+## Azure resource naming
+
+Reduce the number of top-level parameters needed by setting the Azure resource names with variables:
+
+1. Set the top-level resourceEnvironmentName and serviceName parameters as follows:
+
+    ```json
+    "parameters": {
+        "resourceEnvironmentName": {
+                "type": "string"
+            },
+        "serviceName": {
+            "type": "string"
+        },
+            ...
+    }
+    ```
+2. Set the top-level variable of the resourceNamePrefix and Azure resource names as follows:
+
+    ```json
+    "variables": {
+        ...
+        "resourceNamePrefix": "[toLower(concat('bat-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
+        "storageAccountName": "[toLower(concat('bat', parameters('resourceEnvironmentName'), parameters('serviceName'), 'str'))]",
+        "appServiceName": "[concat(variables('resourceNamePrefix'), '-as')]",
+        ...
+    }
+    ```
+3. Within the properties section of the resource deployment section, use the resource name variable for the name parameter of the resource as follows:
+
+    ```json
+    "parameters": {
+        "appServiceName": {
+            "value": "[variables('appServiceName')]"
+        },
+        ...
+    }
+    ```
+4. Set the the top-level output of the generated variable that will be used in the release pipeline as follows:
+
+    ```json
+    "outputs": {
+        "AppServiceName": {
+            "type": "string",
+            "value": "[variables('appServiceName')]"
+        },
+        ...
+    }
+    ```
+## Property name formatting
+
+The convention of property name formatting, as used in the examples above:
+
+1. Parameters: camelCase (matching the release pipeline override template parameters)
+2. Variables: camelCase
+3. Resource Deployments: lowercase-with-hyphens
+4. Outputs: PascalCase (matching the release pipeline variables)
