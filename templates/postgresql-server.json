@@ -44,7 +44,7 @@
       "properties": {
         "storageProfile": {
           "storageMB": "[parameters('postgresSku').size]",
-          "backupRetentionDays": 7,
+          "backupRetentionDays": 35,
           "geoRedundantBackup": "Disabled"
         },
         "version": "9.6",
