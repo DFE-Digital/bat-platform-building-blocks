@@ -63,7 +63,16 @@
         "siteConfig": {
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
-          "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+          "logs": {
+            "httpLogs": {
+              "fileSystem": {
+                "retentionInMb": 35,
+                "retentionInDays": 7,
+                "enabled": true
+              }
+            }
+          }
         },
         "httpsOnly": true
       },
