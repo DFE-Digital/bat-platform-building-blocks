@@ -64,15 +64,22 @@
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-          "logs": {
-            "httpLogs": {
-              "fileSystem": {
-                "retentionInMb": 37,
-                "retentionInDays": 7,
-                "enabled": true
+          "logs": [
+            {
+              "applicationLogs": {
+                "fileSystem": {
+                  "level": "Off"
+                }
+              },
+              "httpLogs": {
+                "fileSystem": {
+                  "retentionInMb": 37,
+                  "retentionInDays": 7,
+                  "enabled": true
+                }
               }
             }
-          }
+          ]
         },
         "httpsOnly": true
       },
