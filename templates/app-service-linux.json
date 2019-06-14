@@ -65,14 +65,9 @@
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
           "logs": {
-            "applicationLogs": {
-              "fileSystem": {
-                "level": "Off"
-              }
-            },
             "httpLogs": {
               "fileSystem": {
-                "retentionInMb": 35,
+                "retentionInMb": 37,
                 "retentionInDays": 7,
                 "enabled": true
               }
