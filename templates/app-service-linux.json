@@ -62,24 +62,10 @@
         "serverFarmId": "[variables('appServicePlanId')]",
         "siteConfig": {
           "alwaysOn": true,
+          "httpLoggingEnabled": true,
+          "logsDirectorySizeLimit": 37,
           "appSettings": "[parameters('appServiceAppSettings')]",
-          "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-          "logs": [
-            {
-              "applicationLogs": {
-                "fileSystem": {
-                  "level": "Off"
-                }
-              },
-              "httpLogs": {
-                "fileSystem": {
-                  "retentionInMb": 37,
-                  "retentionInDays": 7,
-                  "enabled": true
-                }
-              }
-            }
-          ]
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]"
         },
         "httpsOnly": true
       },
