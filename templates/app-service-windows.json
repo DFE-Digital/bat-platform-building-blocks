@@ -53,6 +53,18 @@
           "virtualDirectories": null
         }
       ]
+    },
+    "httpLoggingEnabled": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "requestTracingEnabled": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "detailedErrorLoggingEnabled": {
+      "type": "bool",
+      "defaultValue": false
     }
   },
   "variables": {
@@ -71,6 +83,10 @@
         "httpsOnly": true,
         "siteConfig": {
           "alwaysOn": true,
+          "requestTracingEnabled": "[parameters('requestTracingEnabled')]",
+          "httpLoggingEnabled": "[parameters('httpLoggingEnabled')]",
+          "logsDirectorySizeLimit": 50,
+          "detailedErrorLoggingEnabled": "[parameters('detailedErrorLoggingEnabled')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
           "virtualApplications": "[parameters('appServiceVirtualApplications')]"

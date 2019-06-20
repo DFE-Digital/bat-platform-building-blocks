@@ -67,7 +67,7 @@
         "siteConfig": {
           "alwaysOn": true,
           "httpLoggingEnabled": "[parameters('httpLoggingEnabled')]",
-          "logsDirectorySizeLimit": 35,
+          "logsDirectorySizeLimit": 50,
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]"
         },
