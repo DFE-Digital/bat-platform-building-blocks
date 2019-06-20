@@ -89,7 +89,16 @@
           "detailedErrorLoggingEnabled": "[parameters('detailedErrorLoggingEnabled')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-          "virtualApplications": "[parameters('appServiceVirtualApplications')]"
+          "virtualApplications": "[parameters('appServiceVirtualApplications')]",
+          "logs": [
+            {
+              "applicationLogs": {
+                "fileSystem": {
+                  "level": "Error"
+                }
+              }
+            }
+          ]
         }
       },
       "resources": [
