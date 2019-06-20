@@ -46,7 +46,7 @@
       }
     },
     "httpLoggingEnabled": {
-      "type": "boolean",
+      "type": "bool",
       "defaultValue": false
     }
   },
