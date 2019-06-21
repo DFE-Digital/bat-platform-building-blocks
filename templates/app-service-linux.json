@@ -44,10 +44,6 @@
       "metadata": {
         "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
       }
-    },
-    "httpLoggingEnabled": {
-      "type": "bool",
-      "defaultValue": false
     }
   },
   "variables": {
@@ -66,8 +62,6 @@
         "serverFarmId": "[variables('appServicePlanId')]",
         "siteConfig": {
           "alwaysOn": true,
-          "httpLoggingEnabled": "[parameters('httpLoggingEnabled')]",
-          "logsDirectorySizeLimit": 50,
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]"
         },

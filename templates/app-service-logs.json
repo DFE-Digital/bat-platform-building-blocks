@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App Service to enable logging for"
+      }
+    },
+    "applicationLogsFileSystem": {
+      "type": "string",
+      "defaultValue": "Off",
+      "allowedValues": [
+        "Off",
+        "Error",
+        "Warning",
+        "Information",
+        "Verbose"
+      ]
+    },
+    "httpLogRetentionInMb": {
+      "type": "int",
+      "defaultValue": 35
+    },
+    "httpLoggingEnabled": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "requestTracingEnabled": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "detailedErrorLoggingEnabled": {
+      "type": "bool",
+      "defaultValue": false
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[concat(parameters('appServiceName'),'/logs')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2016-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "applicationLogs": {
+          "fileSystem": {
+            "level": "[parameters('applicationLogsFileSystem')]"
+          },
+          "azureTableStorage": {
+            "level": "Off",
+            "sasUrl": null
+          },
+          "azureBlobStorage": {
+            "level": "Off",
+            "sasUrl": null,
+            "retentionInDays": null
+          }
+        },
+        "httpLogs": {
+          "fileSystem": {
+            "retentionInMb": "[parameters('httpLogRetentionInMb')]",
+            "retentionInDays": null,
+            "enabled": "[parameters('httpLoggingEnabled')]"
+          },
+          "azureBlobStorage": {
+            "sasUrl": null,
+            "retentionInDays": null,
+            "enabled": false
+          }
+        },
+        "failedRequestsTracing": {
+          "enabled": "[parameters('requestTracingEnabled')]"
+        },
+        "detailedErrorMessages": {
+          "enabled": "[parameters('detailedErrorLoggingEnabled')]"
+        }
+      },
+      "dependsOn": []
+    }
+],
+"outputs": {}
+}
