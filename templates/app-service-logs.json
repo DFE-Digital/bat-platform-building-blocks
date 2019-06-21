@@ -47,27 +47,12 @@
         "applicationLogs": {
           "fileSystem": {
             "level": "[parameters('applicationLogsFileSystem')]"
-          },
-          "azureTableStorage": {
-            "level": "Off",
-            "sasUrl": null
-          },
-          "azureBlobStorage": {
-            "level": "Off",
-            "sasUrl": null,
-            "retentionInDays": null
           }
         },
         "httpLogs": {
           "fileSystem": {
             "retentionInMb": "[parameters('httpLogRetentionInMb')]",
-            "retentionInDays": null,
             "enabled": "[parameters('httpLoggingEnabled')]"
-          },
-          "azureBlobStorage": {
-            "sasUrl": null,
-            "retentionInDays": null,
-            "enabled": false
           }
         },
         "failedRequestsTracing": {
