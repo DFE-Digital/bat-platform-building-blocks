@@ -83,20 +83,9 @@
         "httpsOnly": true,
         "siteConfig": {
           "alwaysOn": true,
-          "requestTracingEnabled": "[parameters('requestTracingEnabled')]",
-          "httpLoggingEnabled": "[parameters('httpLoggingEnabled')]",
-          "logsDirectorySizeLimit": 50,
-          "detailedErrorLoggingEnabled": "[parameters('detailedErrorLoggingEnabled')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-          "virtualApplications": "[parameters('appServiceVirtualApplications')]",
-          "logs": {
-            "applicationLogs": {
-              "fileSystem": {
-                "level": "Error"
-              }
-            }
-          }
+          "virtualApplications": "[parameters('appServiceVirtualApplications')]"
         }
       },
       "resources": [
@@ -115,6 +104,50 @@
               "appSettings": "[parameters('appServiceAppSettings')]",
               "connectionStrings": "[parameters('appServiceConnectionStrings')]",
               "virtualApplications": "[parameters('appServiceVirtualApplications')]"
+            }
+          },
+          "dependsOn": [
+            "[parameters('appServiceName')]"
+          ]
+        },
+        {
+          "condition": "[parameters('deployStagingSlot')]",
+          "name": "logs",
+          "type": "config",
+          "apiVersion": "2016-08-01",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "applicationLogs": {
+              "fileSystem": {
+                "level": "Error"
+              },
+              "azureTableStorage": {
+                "level": "Off",
+                "sasUrl": null
+              },
+              "azureBlobStorage": {
+                "level": "Off",
+                "sasUrl": null,
+                "retentionInDays": null
+              }
+            },
+            "httpLogs": {
+              "fileSystem": {
+                "retentionInMb": 50,
+                "retentionInDays": null,
+                "enabled": "[parameters('httpLoggingEnabled')]"
+              },
+              "azureBlobStorage": {
+                "sasUrl": null,
+                "retentionInDays": null,
+                "enabled": false
+              }
+            },
+            "failedRequestsTracing": {
+              "enabled": "[parameters('requestTracingEnabled')]"
+            },
+            "detailedErrorMessages": {
+              "enabled": "[parameters('detailedErrorLoggingEnabled')]"
             }
           },
           "dependsOn": [
