@@ -19,27 +19,38 @@
         "Verbose"
       ],
       "metadata": {
-        "description": "Enables app logs for 12 hours on a Windows ASP and permanently on a Linux ASP"
+        "description": "Enable application logging to collect diagnostic traces from your web app code. You'll need to turn this on to enable the streaming log feature. This setting turns itself off after 12 hours."
       }
     },
     "httpLogRetentionInMb": {
       "type": "int",
-      "defaultValue": 35
+      "defaultValue": 35,
+      "metadata": {
+        "description": "This is the limit that restricts file system usage by app diagnostics logs.The default value is 35 MB. Value can range from 25 MB and 100 MB."
+      }
     },
     "httpLoggingEnabled": {
       "type": "bool",
-      "defaultValue": false
+      "defaultValue": false,
+      "metadata": {
+        "description": "Gather diagnostic information for your web server."
+      }
     },
     "requestTracingEnabled": {
       "type": "bool",
-      "defaultValue": false
+      "defaultValue": false,
+      "metadata": {
+        "description": "Gather diagnostic information on failed requests."
+      }
     },
     "detailedErrorLoggingEnabled": {
       "type": "bool",
-      "defaultValue": false
+      "defaultValue": false,
+      "metadata": {
+        "description": "Gather detailed error messages from your web app."
+      }
     }
   },
-  "variables": {},
   "resources": [
     {
       "name": "[concat(parameters('appServiceName'),'/logs')]",
@@ -64,9 +75,7 @@
         "detailedErrorMessages": {
           "enabled": "[parameters('detailedErrorLoggingEnabled')]"
         }
-      },
-      "dependsOn": []
+      }
     }
-  ],
-  "outputs": {}
+  ]
 }
