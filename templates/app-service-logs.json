@@ -1,0 +1,81 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App Service to enable logging for"
+      }
+    },
+    "applicationLogsFileSystem": {
+      "type": "string",
+      "defaultValue": "Off",
+      "allowedValues": [
+        "Off",
+        "Error",
+        "Warning",
+        "Information",
+        "Verbose"
+      ],
+      "metadata": {
+        "description": "Enable application logging to collect diagnostic traces from your web app code. You'll need to turn this on to enable the streaming log feature. This setting turns itself off after 12 hours."
+      }
+    },
+    "httpLogRetentionInMb": {
+      "type": "int",
+      "defaultValue": 35,
+      "metadata": {
+        "description": "This is the limit that restricts file system usage by app diagnostics logs.The default value is 35 MB. Value can range from 25 MB and 100 MB."
+      }
+    },
+    "httpLoggingEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Gather diagnostic information for your web server."
+      }
+    },
+    "requestTracingEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Gather diagnostic information on failed requests."
+      }
+    },
+    "detailedErrorLoggingEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Gather detailed error messages from your web app."
+      }
+    }
+  },
+  "resources": [
+    {
+      "name": "[concat(parameters('appServiceName'),'/logs')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2016-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "applicationLogs": {
+          "fileSystem": {
+            "level": "[parameters('applicationLogsFileSystem')]"
+          }
+        },
+        "httpLogs": {
+          "fileSystem": {
+            "retentionInMb": "[parameters('httpLogRetentionInMb')]",
+            "enabled": "[parameters('httpLoggingEnabled')]"
+          }
+        },
+        "failedRequestsTracing": {
+          "enabled": "[parameters('requestTracingEnabled')]"
+        },
+        "detailedErrorMessages": {
+          "enabled": "[parameters('detailedErrorLoggingEnabled')]"
+        }
+      }
+    }
+  ]
+}
