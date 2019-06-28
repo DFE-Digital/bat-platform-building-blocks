@@ -41,7 +41,14 @@
     },
     "appServiceState": {
       "type": "string",
-      "defaultValue": "Running"
+      "defaultValue": "Running",
+      "allowedvalues": [
+        "Stopped",
+        "Running"
+      ],
+      "metadata": {
+        "description": "State of the app service when deployed."
+      }
     },
     "deployStagingSlot": {
       "type": "bool",
@@ -73,7 +80,7 @@
         "serverFarmId": "[variables('appServicePlanId')]",
         "clientAffinityEnabled": false,
         "httpsOnly": true,
-        "state":  "[parameters('appServiceState')]",
+        "state": "[parameters('appServiceState')]",
         "siteConfig": {
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
