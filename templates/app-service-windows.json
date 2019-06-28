@@ -39,6 +39,10 @@
         "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
       }
     },
+    "appServiceState": {
+      "type": "string",
+      "defaultValue": "Running"
+    },
     "deployStagingSlot": {
       "type": "bool",
       "defaultValue": true
@@ -69,6 +73,7 @@
         "serverFarmId": "[variables('appServicePlanId')]",
         "clientAffinityEnabled": false,
         "httpsOnly": true,
+        "state":  "[parameters('appServiceState')]",
         "siteConfig": {
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
