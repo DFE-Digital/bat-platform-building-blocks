@@ -42,7 +42,7 @@
     "appServiceState": {
       "type": "string",
       "defaultValue": "Running",
-      "allowedvalues": [
+      "allowedValues": [
         "Stopped",
         "Running"
       ],
