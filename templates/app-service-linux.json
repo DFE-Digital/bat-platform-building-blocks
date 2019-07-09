@@ -44,6 +44,13 @@
       "metadata": {
         "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
       }
+    },
+    "deploymentUsingSlots":{
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Conditional use of slots when deploying webapp"
+      }
     }
   },
   "variables": {
@@ -52,6 +59,28 @@
   },
   "resources": [
     {
+      "condition": "[equals(parameters('deploymentUsingSlots'), false)]",
+
+      "apiVersion": "2016-08-01",
+      "name": "[parameters('appServiceName')]",
+      "type": "Microsoft.Web/sites",
+      "kind": "app,linux,container",
+      "location": "[resourceGroup().location]",
+      "dependsOn": ["app-service-plan", "database", "database-server"],
+      "properties": {
+        "httpsOnly": true,
+        "serverFarmId": "[variables('appServicePlanId')]",
+        "clientAffinityEnabled": false,
+        "siteConfig": {
+          "alwaysOn": false,
+          "linuxFxVersion": "[variables('appServiceRuntimeStack')]",
+          "appSettings": "[parameters('appServiceAppSettings')]",
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+        }
+      }
+    },
+    {
+      "condition": "[equals(parameters('deploymentUsingSlots'), true)]",
       "type": "Microsoft.Web/sites",
       "name": "[parameters('appServiceName')]",
       "kind": "app,linux,container",
