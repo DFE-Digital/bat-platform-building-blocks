@@ -45,34 +45,42 @@
         "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
       }
     },
-    "deploymentUsingSlots":{
+    "deploymentUsingSlots": {
       "type": "bool",
       "defaultValue": true,
       "metadata": {
         "description": "Conditional use of slots when deploying webapp"
       }
+    },
+    "webappAlwaysOn": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "webappSlotAlwaysOn": {
+      "type": "bool",
+      "defaultValue": false
     }
   },
   "variables": {
     "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
-    "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]"
+    "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]",
+    "appServiceHttpsOnly": true,
+    "appServiceClientAffinityEnabled": false
   },
   "resources": [
     {
       "condition": "[equals(parameters('deploymentUsingSlots'), false)]",
-
       "apiVersion": "2016-08-01",
       "name": "[parameters('appServiceName')]",
       "type": "Microsoft.Web/sites",
       "kind": "app,linux,container",
       "location": "[resourceGroup().location]",
-      "dependsOn": ["app-service-plan", "database", "database-server"],
       "properties": {
-        "httpsOnly": true,
+        "httpsOnly": "[variables('appServiceHttpsOnly')]",
         "serverFarmId": "[variables('appServicePlanId')]",
-        "clientAffinityEnabled": false,
+        "clientAffinityEnabled": "[variables('appServiceClientAffinityEnabled')]",
         "siteConfig": {
-          "alwaysOn": false,
+          "alwaysOn": "[parameters('webappAlwaysOn')]",
           "linuxFxVersion": "[variables('appServiceRuntimeStack')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]"
@@ -87,14 +95,14 @@
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
       "properties": {
-        "clientAffinityEnabled": false,
+        "clientAffinityEnabled": "[variables('appServiceClientAffinityEnabled')]",
         "serverFarmId": "[variables('appServicePlanId')]",
         "siteConfig": {
-          "alwaysOn": true,
+          "alwaysOn": "[parameters('webappAlwaysOn')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]"
         },
-        "httpsOnly": true
+        "httpsOnly": "[variables('appServiceHttpsOnly')]"
       },
       "resources": [
         {
@@ -103,15 +111,15 @@
           "apiVersion": "2016-08-01",
           "location": "[resourceGroup().location]",
           "properties": {
-            "clientAffinityEnabled": false,
+            "clientAffinityEnabled": "[variables('appServiceClientAffinityEnabled')]",
             "serverFarmId": "[variables('appServicePlanId')]",
             "siteConfig": {
-              "alwaysOn": false,
+              "alwaysOn": "[parameters('webappSlotAlwaysOn')]",
               "linuxFxVersion": "[parameters('runtimeStack')]",
               "appSettings": "[parameters('appServiceAppSettings')]",
               "connectionStrings": "[parameters('appServiceConnectionStrings')]"
             },
-            "httpsOnly": true
+            "httpsOnly": "[variables('appServiceHttpsOnly')]"
           },
           "dependsOn": [
             "[parameters('appServiceName')]"
