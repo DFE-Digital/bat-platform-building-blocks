@@ -77,7 +77,7 @@
       }
     },
     {
-      "name": "staging",
+      "name": "[concat(parameters('appServiceName'), '/',  'staging')]",
       "condition": "[parameters('deploymentUsingSlots')]",
       "type": "Microsoft.Web/sites/slots",
       "apiVersion": "2016-08-01",
