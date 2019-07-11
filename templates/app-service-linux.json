@@ -55,29 +55,7 @@
   },
   "variables": {
     "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
-    "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]",
-    "resources": [
-      {
-        "name": "staging",
-        "type": "slots",
-        "apiVersion": "2016-08-01",
-        "location": "[resourceGroup().location]",
-        "properties": {
-          "clientAffinityEnabled": false,
-          "serverFarmId": "[variables('appServicePlanId')]",
-          "siteConfig": {
-            "alwaysOn": false,
-            "linuxFxVersion": "[parameters('runtimeStack')]",
-            "appSettings": "[parameters('appServiceAppSettings')]",
-            "connectionStrings": "[parameters('appServiceConnectionStrings')]"
-          },
-          "httpsOnly": true
-        },
-        "dependsOn": [
-          "[parameters('appServiceName')]"
-        ]
-      }
-    ]
+    "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]"
   },
   "resources": [
     {
@@ -116,7 +94,7 @@
         "httpsOnly": true
       },
       "dependsOn": [
-        "[parameters('appServiceName')]"
+        "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
       ]
     },
     {
