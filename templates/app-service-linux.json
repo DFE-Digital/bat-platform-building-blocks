@@ -51,87 +51,58 @@
       "metadata": {
         "description": "Conditional use of slots when deploying webapp"
       }
-    },
-    "webappAlwaysOn": {
-      "type": "bool",
-      "defaultValue": true
-    },
-    "webappSlotAlwaysOn": {
-      "type": "bool",
-      "defaultValue": false
     }
   },
   "variables": {
     "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
     "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]",
-    "appServiceHttpsOnly": true,
-    "appServiceClientAffinityEnabled": false,
-    "appServiceName": "[concat(parameters('appServiceName'), '-', if(parameters('deploymentUsingSlots'), 'withslots', 'withoutslots'))]"
+    "resources": [
+      {
+        "name": "staging",
+        "type": "slots",
+        "apiVersion": "2016-08-01",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "clientAffinityEnabled": false,
+          "serverFarmId": "[variables('appServicePlanId')]",
+          "siteConfig": {
+            "alwaysOn": false,
+            "linuxFxVersion": "[parameters('runtimeStack')]",
+            "appSettings": "[parameters('appServiceAppSettings')]",
+            "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+          },
+          "httpsOnly": true
+        },
+        "dependsOn": [
+          "[parameters('appServiceName')]"
+        ]
+      }
+    ]
   },
   "resources": [
     {
-      "name":"[variables('appServiceName')]",
-      "condition": "[not(parameters('deploymentUsingSlots'))]",
-      "apiVersion": "2016-08-01",
       "type": "Microsoft.Web/sites",
-      "kind": "app,linux,container",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "httpsOnly": "[variables('appServiceHttpsOnly')]",
-        "serverFarmId": "[variables('appServicePlanId')]",
-        "clientAffinityEnabled": "[variables('appServiceClientAffinityEnabled')]",
-        "siteConfig": {
-          "alwaysOn": "[parameters('webappAlwaysOn')]",
-          "linuxFxVersion": "[parameters('runtimeStack')]",
-          "appSettings": "[parameters('appServiceAppSettings')]",
-          "connectionStrings": "[parameters('appServiceConnectionStrings')]"
-        }
-      }
-    },
-    {
-      "name":"[variables('appServiceName')]",
-      "condition": "[parameters('deploymentUsingSlots')]",
-      "type": "Microsoft.Web/sites",
+      "name": "[parameters('appServiceName')]",
       "kind": "app,linux,container",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
       "properties": {
-        "clientAffinityEnabled": "[variables('appServiceClientAffinityEnabled')]",
+        "clientAffinityEnabled": false,
         "serverFarmId": "[variables('appServicePlanId')]",
         "siteConfig": {
-          "alwaysOn": "[parameters('webappAlwaysOn')]",
+          "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
-          "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+          "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]"
         },
-        "httpsOnly": "[variables('appServiceHttpsOnly')]"
+        "httpsOnly": true
       },
-      "resources": [
-        {
-          "name": "staging",
-          "type": "slots",
-          "apiVersion": "2016-08-01",
-          "location": "[resourceGroup().location]",
-          "properties": {
-            "clientAffinityEnabled": "[variables('appServiceClientAffinityEnabled')]",
-            "serverFarmId": "[variables('appServicePlanId')]",
-            "siteConfig": {
-              "alwaysOn": "[parameters('webappSlotAlwaysOn')]",
-              "linuxFxVersion": "[parameters('runtimeStack')]",
-              "appSettings": "[parameters('appServiceAppSettings')]",
-              "connectionStrings": "[parameters('appServiceConnectionStrings')]"
-            },
-            "httpsOnly": "[variables('appServiceHttpsOnly')]"
-          },
-          "dependsOn": [
-            "[variables('appServiceName')]"
-          ]
-        }
-      ]
+      "resources": "[if(parameters('deploymentUsingSlots'), variables('resources'), json('null'))]"
     },
     {
       "type": "Microsoft.Web/sites/hostnameBindings",
       "condition": "[variables('useCustomHostname')]",
-      "name": "[concat(variables('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
+      "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
       "properties": {
@@ -139,14 +110,14 @@
         "thumbprint": "[parameters('certificateThumbprint')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('appServiceName'))]"
+        "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
       ]
     }
   ],
   "outputs": {
     "possibleOutboundIpAddresses": {
       "type": "array",
-      "value": "[split(reference(variables('appServiceName')).possibleOutboundIpAddresses, ',')]"
+      "value": "[split(reference(parameters('appServiceName')).possibleOutboundIpAddresses, ',')]"
     }
   }
 }
