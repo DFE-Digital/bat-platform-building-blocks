@@ -71,7 +71,7 @@
     {
       "condition": "[not(parameters('deploymentUsingSlots'))]",
       "apiVersion": "2016-08-01",
-      "name": "[parameters('appServiceName')]",
+      "name":"[Concat(parameters('appServiceName'),'')]",
       "type": "Microsoft.Web/sites",
       "kind": "app,linux,container",
       "location": "[resourceGroup().location]",
