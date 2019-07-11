@@ -69,9 +69,9 @@
   },
   "resources": [
     {
+      "name":"[Concat(parameters('appServiceName'),'-1')]",
       "condition": "[not(parameters('deploymentUsingSlots'))]",
       "apiVersion": "2016-08-01",
-      "name":"[Concat(parameters('appServiceName'),'-1')]",
       "type": "Microsoft.Web/sites",
       "kind": "app,linux,container",
       "location": "[resourceGroup().location]",
@@ -88,9 +88,9 @@
       }
     },
     {
+      "name":"[Concat(parameters('appServiceName'),'-2')]",
       "condition": "[parameters('deploymentUsingSlots')]",
       "type": "Microsoft.Web/sites",
-      "name": "[parameters('appServiceName')]",
       "kind": "app,linux,container",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
