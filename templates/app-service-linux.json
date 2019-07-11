@@ -81,7 +81,7 @@
         "clientAffinityEnabled": "[variables('appServiceClientAffinityEnabled')]",
         "siteConfig": {
           "alwaysOn": "[parameters('webappAlwaysOn')]",
-          "linuxFxVersion": "[variables('appServiceRuntimeStack')]",
+          "linuxFxVersion": "[parameters('runtimeStack')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]"
         }
