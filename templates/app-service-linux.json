@@ -65,11 +65,12 @@
     "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
     "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]",
     "appServiceHttpsOnly": true,
-    "appServiceClientAffinityEnabled": false
+    "appServiceClientAffinityEnabled": false,
+    "appServiceName": "[concat(parameters('appServiceName'), '-', if(parameters('deploymentUsingSlots'), 'withslots', 'withoutslots'))]"
   },
   "resources": [
     {
-      "name":"[Concat(parameters('appServiceName'),'-1')]",
+      "name":"[variables('appServiceName')]",
       "condition": "[not(parameters('deploymentUsingSlots'))]",
       "apiVersion": "2016-08-01",
       "type": "Microsoft.Web/sites",
@@ -88,7 +89,7 @@
       }
     },
     {
-      "name":"[Concat(parameters('appServiceName'),'-2')]",
+      "name":"[variables('appServiceName')]",
       "condition": "[parameters('deploymentUsingSlots')]",
       "type": "Microsoft.Web/sites",
       "kind": "app,linux,container",
@@ -122,7 +123,7 @@
             "httpsOnly": "[variables('appServiceHttpsOnly')]"
           },
           "dependsOn": [
-            "[parameters('appServiceName')]"
+            "[variables('appServiceName')]"
           ]
         }
       ]
@@ -130,7 +131,7 @@
     {
       "type": "Microsoft.Web/sites/hostnameBindings",
       "condition": "[variables('useCustomHostname')]",
-      "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
+      "name": "[concat(variables('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
       "properties": {
@@ -138,14 +139,14 @@
         "thumbprint": "[parameters('certificateThumbprint')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+        "[resourceId('Microsoft.Web/sites', variables('appServiceName'))]"
       ]
     }
   ],
   "outputs": {
     "possibleOutboundIpAddresses": {
       "type": "array",
-      "value": "[split(reference(parameters('appServiceName')).possibleOutboundIpAddresses, ',')]"
+      "value": "[split(reference(variables('appServiceName')).possibleOutboundIpAddresses, ',')]"
     }
   }
 }
