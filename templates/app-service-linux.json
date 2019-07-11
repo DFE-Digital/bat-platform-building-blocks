@@ -96,8 +96,28 @@
           "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]"
         },
         "httpsOnly": true
+      }
+    },
+    {
+      "name": "staging",
+      "condition": "[parameters('deploymentUsingSlots')]",
+      "type": "Microsoft.Web/sites/slots",
+      "apiVersion": "2016-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "clientAffinityEnabled": false,
+        "serverFarmId": "[variables('appServicePlanId')]",
+        "siteConfig": {
+          "alwaysOn": false,
+          "linuxFxVersion": "[parameters('runtimeStack')]",
+          "appSettings": "[parameters('appServiceAppSettings')]",
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+        },
+        "httpsOnly": true
       },
-      "resources": "[if(parameters('deploymentUsingSlots'), variables('resources'), json('null'))]"
+      "dependsOn": [
+        "[parameters('appServiceName')]"
+      ]
     },
     {
       "type": "Microsoft.Web/sites/hostnameBindings",
