@@ -36,7 +36,7 @@
         "count": "[length(parameters('ipAddresses'))]",
         "mode": "serial",
         "name": "firewallRuleCopy",
-        "batchSize": 1
+        "batchSize": 3
       }
     }
   ],
