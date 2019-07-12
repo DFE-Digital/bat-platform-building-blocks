@@ -44,6 +44,13 @@
       "metadata": {
         "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
       }
+    },
+    "deploymentUsingSlots": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Conditional use of slots when deploying webapp"
+      }
     }
   },
   "variables": {
@@ -63,31 +70,31 @@
         "siteConfig": {
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+          "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]"
+        },
+        "httpsOnly": true
+      }
+    },
+    {
+      "name": "[concat(parameters('appServiceName'), '/',  'staging')]",
+      "condition": "[parameters('deploymentUsingSlots')]",
+      "type": "Microsoft.Web/sites/slots",
+      "apiVersion": "2016-08-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "clientAffinityEnabled": false,
+        "serverFarmId": "[variables('appServicePlanId')]",
+        "siteConfig": {
+          "alwaysOn": false,
+          "linuxFxVersion": "[parameters('runtimeStack')]",
+          "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]"
         },
         "httpsOnly": true
       },
-      "resources": [
-        {
-          "name": "staging",
-          "type": "slots",
-          "apiVersion": "2016-08-01",
-          "location": "[resourceGroup().location]",
-          "properties": {
-            "clientAffinityEnabled": false,
-            "serverFarmId": "[variables('appServicePlanId')]",
-            "siteConfig": {
-              "alwaysOn": false,
-              "linuxFxVersion": "[parameters('runtimeStack')]",
-              "appSettings": "[parameters('appServiceAppSettings')]",
-              "connectionStrings": "[parameters('appServiceConnectionStrings')]"
-            },
-            "httpsOnly": true
-          },
-          "dependsOn": [
-            "[parameters('appServiceName')]"
-          ]
-        }
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
       ]
     },
     {
