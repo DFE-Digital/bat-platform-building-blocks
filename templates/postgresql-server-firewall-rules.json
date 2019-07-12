@@ -34,8 +34,9 @@
       },
       "copy": {
         "count": "[length(parameters('ipAddresses'))]",
-        "mode": "Parallel",
-        "name": "firewallRuleCopy"
+        "mode": "serial",
+        "name": "firewallRuleCopy",
+        "batchSize": 1
       }
     }
   ],
