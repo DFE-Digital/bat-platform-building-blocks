@@ -51,6 +51,13 @@
       "metadata": {
         "description": "Conditional use of slots when deploying webapp"
       }
+    },
+    "appAlwaysOn": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Don't let the app sleep after a period of inactivity"
+      }
     }
   },
   "variables": {
@@ -68,7 +75,7 @@
         "clientAffinityEnabled": false,
         "serverFarmId": "[variables('appServicePlanId')]",
         "siteConfig": {
-          "alwaysOn": true,
+          "alwaysOn": "[parameters('appAlwaysOn')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
           "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]"
