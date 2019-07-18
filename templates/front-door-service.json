@@ -13,15 +13,10 @@
           "metadata": {
               "description": "The address of the backend app services."
           }
-      },
-      "customHostName": {
-        "type": "string",
-        "defaultValue": ""
       }
   },
   "variables": {
-      "frontdoorLocation": "global",
-      "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]"
+      "frontdoorLocation": "global"
   },
   "resources": [
       {
@@ -61,15 +56,6 @@
                           "sessionAffinityEnabledState": "Enabled",
                           "sessionAffinityTtlSeconds": 0
                       }
-                  },
-                  {
-                    "condition":"[variables('useCustomHostname')]",
-                    "name": "[concat(parameters('frontDoorName'),'-','frontendEndpointsCustomHostName')]",
-                      "properties": {
-                          "hostName": "[parameters('customHostName')]",
-                          "sessionAffinityEnabledState": "Enabled",
-                          "sessionAffinityTtlSeconds": 0
-                      }
                   }
               ],
               "backendPools": [
@@ -83,7 +69,8 @@
                                   "httpPort": 80,
                                   "httpsPort": 443,
                                   "priority": 1,
-                                  "weight": 50
+                                  "weight": 50,
+                                  "backendHostHeader": "[parameters('backendAppServiceName')]"
                               }
                           ],
                           "loadBalancingSettings": {
