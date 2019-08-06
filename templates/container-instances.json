@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "containerName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the container."
+      }
+    },
+    "imageName": {
+      "type": "string",
+      "metadata": {
+        "description": "Container image reference this could be the URI or Docker Hub tag of the public or private image. For Docker Hub images, the full URI isn't required, only the image name and tag (for example: microsoft/iis:nanoserver)"
+      }
+    },
+    "osType": {
+      "type": "string",
+      "defaultValue": "Linux",
+      "allowedValues": [
+        "Linux",
+        "Windows"
+      ]
+    },
+    "numberCpuCores": {
+      "defaultValue": "1",
+      "type": "string"
+    },
+    "memory": {
+      "defaultValue": "1.5",
+      "type": "string"
+    },
+    "restartPolicy": {
+      "type": "string",
+      "defaultValue": "Always",
+      "allowedValues": [
+        "OnFailure",
+        "Always",
+        "Never"
+      ]
+    },
+    "environmentVariables": {
+      "type": "array"
+    }
+  },
+  "resources": [
+    {
+      "location": "[resourceGroup().location]",
+      "name": "[parameters('containerName')]",
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2018-10-01",
+      "properties": {
+        "containers": [
+          {
+            "name": "[parameters('containerName')]",
+            "properties": {
+              "image": "[parameters('imageName')]",
+              "resources": {
+                "requests": {
+                  "cpu": "[int(parameters('numberCpuCores'))]",
+                  "memoryInGB": "[float(parameters('memory'))]"
+                }
+              },
+              "environmentVariables": "[parameters('environmentVariables')]"
+            }
+          }
+        ],
+        "restartPolicy": "[parameters('restartPolicy')]",
+        "osType": "[parameters('osType')]"
+      },
+      "tags": {}
+    }
+  ],
+  "outputs": {}
+}
