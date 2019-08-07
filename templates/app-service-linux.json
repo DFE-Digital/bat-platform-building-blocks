@@ -34,6 +34,13 @@
         "description": "The name of the runtime stack for the container"
       }
     },
+    "customStartupCommand": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Custom startup command for the container running on the app service"
+      }
+    },
     "customHostName": {
       "type": "string",
       "defaultValue": ""
@@ -71,7 +78,8 @@
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-          "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]"
+          "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]",
+          "appCommandLine": "[parameters('customStartupCommand')]"
         },
         "httpsOnly": true
       }
