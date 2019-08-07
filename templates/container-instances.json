@@ -82,9 +82,7 @@
         ],
         "restartPolicy": "[parameters('restartPolicy')]",
         "osType": "[parameters('osType')]"
-      },
-      "tags": {}
+      }
     }
-  ],
-  "outputs": {}
+  ]
 }
