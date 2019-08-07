@@ -97,7 +97,8 @@
           "alwaysOn": false,
           "linuxFxVersion": "[parameters('runtimeStack')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
-          "connectionStrings": "[parameters('appServiceConnectionStrings')]"
+          "connectionStrings": "[parameters('appServiceConnectionStrings')]",
+          "appCommandLine": "[parameters('customStartupCommand')]"
         },
         "httpsOnly": true
       },
