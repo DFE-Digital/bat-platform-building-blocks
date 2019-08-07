@@ -2,17 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "containerGroupName": {
+    "containerName": {
       "type": "string",
       "metadata": {
         "description": "The name of the Azure Container Instances resource. This will be its identifier in Azure and can be different from the image name."
       }
     },
-    "containerName": {
+    "containerGroupName": {
       "type": "string",
       "metadata": {
-        "description": "The name of the container inside the continer group."
-      }
+        "description": "The name of the container group to identify individual container to support multi-container deployment. This is an optional parameter"
+      },
+      "defaultValue": ""
     },
     "imageName": {
       "type": "string",
@@ -70,13 +71,13 @@
   "resources": [
     {
       "location": "[resourceGroup().location]",
-      "name": "[variables('containerGroupName')]",
+      "name": "[parameters('containerName')]",
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2018-10-01",
       "properties": {
         "containers": [
           {
-            "name": "[parameters('containerName')]",
+            "name": "[variables('containerGroupName')]",
             "properties": {
               "image": "[parameters('imageName')]",
               "resources": {
