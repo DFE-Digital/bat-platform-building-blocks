@@ -2,10 +2,16 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "containerName": {
+    "containerGroupName": {
       "type": "string",
       "metadata": {
         "description": "The name of the Azure Container Instances resource. This will be its identifier in Azure and can be different from the image name."
+      }
+    },
+    "containerName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the container inside the continer group."
       }
     },
     "imageName": {
@@ -58,10 +64,13 @@
       }
     }
   },
+  "variables": {
+    "containerGroupName": "[if(not(empty(parameters('containerGroupName'))), parameters('containerGroupName') , parameters('containerName'))]"
+  },
   "resources": [
     {
       "location": "[resourceGroup().location]",
-      "name": "[parameters('containerName')]",
+      "name": "[variables('containerGroupName')]",
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2018-10-01",
       "properties": {
