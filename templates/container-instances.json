@@ -5,7 +5,7 @@
     "containerName": {
       "type": "string",
       "metadata": {
-        "description": "The name of the container."
+        "description": "The name of the Azure Container Instances resource. This will be its identifier in Azure and can be different from the image name."
       }
     },
     "imageName": {
@@ -20,15 +20,24 @@
       "allowedValues": [
         "Linux",
         "Windows"
-      ]
+      ],
+      "metadata": {
+        "description": "Windows or Linux container instance"
+      }
     },
     "numberCpuCores": {
       "defaultValue": "1",
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "The number of CPU cores to allocate to the container. Must be an integer."
+      }
     },
     "memory": {
       "defaultValue": "1.5",
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "The amount of memory to allocate to the container in gigabytes."
+      }
     },
     "restartPolicy": {
       "type": "string",
@@ -37,10 +46,16 @@
         "OnFailure",
         "Always",
         "Never"
-      ]
+      ],
+      "metadata": {
+        "description": "The behavior of Azure runtime if container has stopped."
+      }
     },
     "environmentVariables": {
-      "type": "array"
+      "type": "array",
+      "metadata": {
+        "description": "List of environment variables in an array format. Provide a name and value field for each variable and name and securevalue for hidden attributes i.e. secrets and password "
+      }
     }
   },
   "resources": [
