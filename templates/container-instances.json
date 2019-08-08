@@ -20,6 +20,12 @@
         "description": "Container image reference this could be the URI or Docker Hub tag of the public or private image. For Docker Hub images, the full URI isn't required, only the image name and tag (for example: microsoft/iis:nanoserver)"
       }
     },
+    "command": {
+      "type": "string",
+      "metadata": {
+        "description": "The commands to execute within the container instance in exec form. - string"
+      }
+    },
     "osType": {
       "type": "string",
       "defaultValue": "Linux",
@@ -82,7 +88,8 @@
                   "memoryInGB": "[float(parameters('memory'))]"
                 }
               },
-              "environmentVariables": "[parameters('environmentVariables')]"
+              "environmentVariables": "[parameters('environmentVariables')]",
+              "command": "[parameters('command')]"
             }
           }
         ],
