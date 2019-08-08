@@ -21,7 +21,7 @@
       }
     },
     "command": {
-      "type": "string",
+      "type": "array",
       "metadata": {
         "description": "The commands to execute within the container instance in exec form. - string"
       }
