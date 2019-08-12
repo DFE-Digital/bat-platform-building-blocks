@@ -1,0 +1,134 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "servicePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Prefix of the resources"
+      }
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the app service plan."
+      }
+    },
+    "trafficManagerProfileName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the traffic manager profile."
+      }
+    },
+    "trafficManagerEndpointName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the traffic manager endpoint."
+      }
+    },
+    "trafficManagerEndpointPriority": {
+      "type": "int",
+      "metadata": {
+        "description": "The priority of the traffic manger endpoint."
+      }
+    }
+  },
+  "variables": {
+    "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/aci_vnet_support/templates/",
+    "vnetName": "[concat(parameters('servicePrefix'),'-example-vnet')]",
+    "subnetName": "aci-subnet-1",
+    "subnetAddressPrefix": "10.0.0.0/24",
+    "networkProfileName": "[concat(parameters('servicePrefix'),'-example-profile')]",
+    "containerInstanceName": "[concat(parameters('servicePrefix'),'-example-aci')]",
+    "imageName": "hello-world"
+  },
+  "resources": [
+    {
+      "name": "virtual-network",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'virtual-network.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "subnetConfiguration": {
+            "value": {
+              "name": "[variables('subnetName')]",
+              "properties": {
+                "addressPrefix": "[variables('subnetAddressPrefix')]",
+                "delegations": {
+                  "name": "DelegationService",
+                  "properties": {
+                    "serviceName": "Microsoft.ContainerInstance/containerGroups"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "network-profile",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+        "virtual-network"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'container-instance-network-profile.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "vnetName": {
+            "value": "[variables('vnetName')]"
+          },
+          "subnetName": {
+            "value": "[variables('subnetName')]"
+          },
+          "networkProfileName": {
+            "value": "[variables('networkProfileName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "container-instance",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+        "network-profile"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'container-instances.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "containerInstanceName": {
+            "value": "[variables('containerInstanceName')]"
+          },
+          "containerName": {
+            "value": "[variables('containerInstanceName')]"
+          },
+          "imageName": {
+            "value": "[variables('imageName')]"
+          },
+          "networkProfileName": {
+            "value": "[variables('networkProfileName')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

@@ -68,14 +68,26 @@
       "metadata": {
         "description": "List of environment variables in an array format. Provide a name and value field for each variable and name and securevalue for hidden attributes i.e. secrets and password "
       }
+    },
+    "networkProfileName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The name of the network profile that will attach to the container instance"
+      }
+    }
+  },
+  "variables": {
+    "networkProfile": {
+      "Id": "[if(greater(length(parameters('networkProfileName')) ,0), resourceId('Microsoft.Network/networkProfiles', parameters('networkProfileName')), 'placeholder')]"
     }
   },
   "resources": [
     {
-      "location": "[resourceGroup().location]",
       "name": "[parameters('containerInstanceName')]",
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2018-10-01",
+      "location": "[resourceGroup().location]",
       "properties": {
         "containers": [
           {
@@ -94,8 +106,15 @@
           }
         ],
         "restartPolicy": "[parameters('restartPolicy')]",
-        "osType": "[parameters('osType')]"
+        "osType": "[parameters('osType')]",
+        "networkProfile": "[if(greater(length(parameters('networkProfileName')) ,0), variables('networkProfile'), json('null'))]"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "containerIPv4Address": {
+      "type": "string",
+      "value": "[if(greater(length(parameters('networkProfileName')) ,0), reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerInstanceName'))).ipAddress.ip, json('null'))]"
+    }
+  }
 }
