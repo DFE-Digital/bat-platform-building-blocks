@@ -66,6 +66,7 @@
     },
     "environmentVariables": {
       "type": "array",
+      "defaultValue": [],
       "metadata": {
         "description": "List of environment variables in an array format. Provide a name and value field for each variable and name and securevalue for hidden attributes i.e. secrets and password "
       }
