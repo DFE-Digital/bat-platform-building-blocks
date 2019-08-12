@@ -7,30 +7,6 @@
       "metadata": {
         "description": "Prefix of the resources"
       }
-    },
-    "appServicePlanName": {
-      "type": "string",
-      "metadata": {
-        "description": "The name of the app service plan."
-      }
-    },
-    "trafficManagerProfileName": {
-      "type": "string",
-      "metadata": {
-        "description": "The name of the traffic manager profile."
-      }
-    },
-    "trafficManagerEndpointName": {
-      "type": "string",
-      "metadata": {
-        "description": "The name of the traffic manager endpoint."
-      }
-    },
-    "trafficManagerEndpointPriority": {
-      "type": "int",
-      "metadata": {
-        "description": "The priority of the traffic manger endpoint."
-      }
     }
   },
   "variables": {
@@ -58,18 +34,22 @@
             "value": "[variables('vnetName')]"
           },
           "subnetConfiguration": {
-            "value": {
-              "name": "[variables('subnetName')]",
-              "properties": {
-                "addressPrefix": "[variables('subnetAddressPrefix')]",
-                "delegations": {
-                  "name": "DelegationService",
-                  "properties": {
-                    "serviceName": "Microsoft.ContainerInstance/containerGroups"
-                  }
+            "value": [
+              {
+                "name": "[variables('subnetName')]",
+                "properties": {
+                  "addressPrefix": "[variables('subnetAddressPrefix')]",
+                  "delegations": [
+                    {
+                      "name": "DelegationService",
+                      "properties": {
+                        "serviceName": "Microsoft.ContainerInstance/containerGroups"
+                      }
+                    }
+                  ]
                 }
               }
-            }
+            ]
           }
         }
       }
