@@ -12,7 +12,6 @@
     "ipAddresses": {
       "type": "array",
       "defaultValue": [],
-      "minLength": 1,
       "metadata": {
         "description": "Array of IP addresses to whitelist against a SQL server"
       }
