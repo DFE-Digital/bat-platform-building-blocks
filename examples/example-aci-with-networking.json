@@ -7,6 +7,12 @@
       "metadata": {
         "description": "Prefix of the resources"
       }
+    },
+    "postgresServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the postgres server to configure"
+      }
     }
   },
   "variables": {
@@ -45,6 +51,11 @@
                       "properties": {
                         "serviceName": "Microsoft.ContainerInstance/containerGroups"
                       }
+                    }
+                  ],
+                  "serviceEndpoints": [
+                    {
+                      "service": "Microsoft.Sql"
                     }
                   ]
                 }
@@ -105,6 +116,31 @@
           },
           "networkProfileName": {
             "value": "[variables('networkProfileName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "postgres-firewall-rule",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+        "container-instance"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'postgresql-server-firewall-rules.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "serverName": {
+            "value": "[parameters('postgresServerName')]"
+          },
+          "subnetResourceIdList": {
+            "value": [
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]"
+            ]
           }
         }
       }
