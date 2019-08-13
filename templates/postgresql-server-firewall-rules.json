@@ -4,12 +4,14 @@
   "parameters": {
     "firewallRuleNamePrefix": {
       "type": "string",
+      "defaultValue": "",
       "metadata": {
         "description": "The prefix for the firewall rule name, it will be appended by the IP address"
       }
     },
     "ipAddresses": {
       "type": "array",
+      "defaultValue": [],
       "minLength": 1,
       "metadata": {
         "description": "Array of IP addresses to whitelist against a SQL server"
