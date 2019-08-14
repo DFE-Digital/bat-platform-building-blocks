@@ -31,7 +31,6 @@
     },
     "subnetName": {
       "type": "string",
-      "defaultValue": "",
       "metadata": {
         "description": "The name of the subnet that the container instance will connect to"
       }
