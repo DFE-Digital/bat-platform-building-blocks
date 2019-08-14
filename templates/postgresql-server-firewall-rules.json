@@ -48,18 +48,18 @@
       }
     },
     {
-      "name": "[replace(concat(parameters('serverName'), '/', if(greater(length(parameters('subnetResourceIdList')), 0) , last(split(parameters('subnetResourceIdList')[copyIndex()], '/')), 'placeholder')), '.', '_')]",
+      "name": "[replace(concat(parameters('serverName'), '/', if(greater(length(parameters('subnetResourceIdList')), 0), last(split(parameters('subnetResourceIdList')[copyIndex()], '/')), 'placeholder')), '.', '_')]",
       "condition": "[greater(length(parameters('subnetResourceIdList')), 0)]",
       "type": "Microsoft.DBforPostgreSQL/servers/virtualNetworkRules",
       "apiVersion": "2017-12-01",
       "properties": {
         "virtualNetworkSubnetId": "[parameters('subnetResourceIdList')[copyIndex()]]"
       },
-      "copy":{
+      "copy": {
         "count": "[if(greater(length(parameters('subnetResourceIdList')), 0), length(parameters('subnetResourceIdList')), 1)]",
-          "mode": "Parallel",
-          "name": "virtualNetworkRuleCopy"
-        }
+        "mode": "Parallel",
+        "name": "virtualNetworkRuleCopy"
+      }
     }
   ],
   "outputs": {}
