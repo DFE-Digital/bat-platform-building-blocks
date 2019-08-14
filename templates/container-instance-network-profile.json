@@ -25,7 +25,6 @@
     },
     "vnetName": {
       "type": "string",
-      "defaultValue": "",
       "metadata": {
         "description": "The name of the vNet that the container instance will connect to"
       }
