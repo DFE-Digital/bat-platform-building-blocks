@@ -116,7 +116,7 @@
   "outputs": {
     "containerIPv4Address": {
       "type": "string",
-      "value": "[if(greater(length(parameters('networkProfileName')) ,0), reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerInstanceName'))).ipAddress.ip, json('null'))]"
+      "value": "[if(greater(length(parameters('networkProfileName')) ,0), reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerInstanceName'))).ipAddress.ip, '')]"
     }
   }
 }
