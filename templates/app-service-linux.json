@@ -59,6 +59,13 @@
         "description": "Conditional use of slots when deploying webapp"
       }
     },
+    "http20Enabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": " Configures a web site to allow clients to connect over http2.0"
+      }
+    },
     "appAlwaysOn": {
       "type": "bool",
       "defaultValue": true,
@@ -90,6 +97,7 @@
         "serverFarmId": "[variables('appServicePlanId')]",
         "siteConfig": {
           "alwaysOn": "[parameters('appAlwaysOn')]",
+          "http20Enabled": "[parameters('http20Enabled')]",
           "httpLoggingEnabled": "[parameters('httpLoggingEnabled')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
