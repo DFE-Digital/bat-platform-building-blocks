@@ -14,6 +14,12 @@
         "description": "The address of the backend app services."
       }
     },
+    "customDomainName": {
+      "type": "string",
+      "metadata": {
+        "description": "The hostname of the frontendEndpoints. Must be a domain name."
+      }
+    },
     "wafPolicyName": {
       "type": "string",
       "metadata": {
@@ -93,11 +99,23 @@
             "name": "[concat(parameters('frontDoorName'),'-','frontendEndpoints')]",
             "properties": {
               "hostName": "[concat(parameters('frontDoorName'), '.azurefd.net')]",
-              "sessionAffinityEnabledState": "Enabled",
+              "sessionAffinityEnabledState": "Disabled",
               "sessionAffinityTtlSeconds": 0,
               "webApplicationFirewallPolicyLink": {
                 "id": "[variables('wafpolicyref')]"
               }
+            }
+          },
+          {
+            "name": "[concat(parameters('frontDoorName'),'-','frontendEndpoints2')]",
+            "properties": {
+                "hostName": "[parameters('customDomainName')]",
+                "sessionAffinityEnabledState": "Disabled",
+                "sessionAffinityTtlSeconds": 0,
+                "resourceState": "Enabled",
+                "webApplicationFirewallPolicyLink": {
+                  "id": "[variables('wafpolicyref')]"
+                }
             }
           }
         ],
@@ -150,6 +168,31 @@
                 }
               }
             }
+          },
+          {
+            "name": "[concat(replace(parameters('customDomainName'),'.', '-'),'-','routingRules')]",
+            "properties": {
+              "frontendEndpoints": [
+                {
+                  "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints', parameters('frontDoorName'), concat(parameters('frontDoorName'),'-','frontendEndpoints2'))]"
+                }
+              ],
+              "acceptedProtocols": [
+                "Http",
+                "Https"
+              ],
+              "patternsToMatch": [
+                "/*"
+              ],
+              "enabledState": "Enabled",
+              "routeConfiguration": {
+                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                "forwardingProtocol": "MatchRequest",
+                "backendPool": {
+                  "id": "[resourceId('Microsoft.Network/frontDoors/backendPools', parameters('frontDoorName'), concat(parameters('frontDoorName'),'-','backendPool'))]"
+                }
+              }
+            }
           }
         ]
       }
@@ -181,3 +224,7 @@
     }
   ]
 }
+
+
+
+
