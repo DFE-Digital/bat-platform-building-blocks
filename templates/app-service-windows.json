@@ -88,9 +88,9 @@
         "clientAffinityEnabled": false,
         "httpsOnly": true,
         "state": "[parameters('appServiceState')]",
+        "http20Enabled": "[parameters('http20Enabled')]",
         "siteConfig": {
           "alwaysOn": true,
-          "http20Enabled": "[parameters('http20Enabled')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
           "virtualApplications": "[parameters('appServiceVirtualApplications')]"
