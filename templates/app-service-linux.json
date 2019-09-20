@@ -59,6 +59,13 @@
         "description": "Conditional use of slots when deploying webapp"
       }
     },
+    "http20Enabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": " Configures a web site to allow clients to connect over http2.0"
+      }
+    },
     "appAlwaysOn": {
       "type": "bool",
       "defaultValue": true,
@@ -96,6 +103,7 @@
           "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]",
           "appCommandLine": "[parameters('customStartupCommand')]"
         },
+        "http20Enabled": "[parameters('http20Enabled')]",
         "httpsOnly": true
       }
     },

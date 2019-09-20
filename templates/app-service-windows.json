@@ -54,6 +54,13 @@
       "type": "bool",
       "defaultValue": true
     },
+    "http20Enabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": " Configures a web site to allow clients to connect over http2.0"
+      }
+    },
     "appServiceVirtualApplications": {
       "type": "array",
       "defaultValue": [
@@ -81,6 +88,7 @@
         "clientAffinityEnabled": false,
         "httpsOnly": true,
         "state": "[parameters('appServiceState')]",
+        "http20Enabled": "[parameters('http20Enabled')]",
         "siteConfig": {
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
