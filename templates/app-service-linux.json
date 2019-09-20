@@ -123,6 +123,7 @@
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
           "appCommandLine": "[parameters('customStartupCommand')]"
         },
+        "http20Enabled": "[parameters('http20Enabled')]",
         "httpsOnly": true
       },
       "dependsOn": [
