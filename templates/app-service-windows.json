@@ -56,7 +56,7 @@
     },
     "http20Enabled": {
       "type": "bool",
-      "defaultValue": true,
+      "defaultValue": false,
       "metadata": {
         "description": " Configures a web site to allow clients to connect over http2.0"
       }
