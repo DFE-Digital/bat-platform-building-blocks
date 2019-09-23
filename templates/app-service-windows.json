@@ -107,6 +107,7 @@
             "serverFarmId": "[variables('appServicePlanId')]",
             "clientAffinityEnabled": false,
             "httpsOnly": true,
+            "http20Enabled": "[parameters('http20Enabled')]",
             "siteConfig": {
               "alwaysOn": true,
               "appSettings": "[parameters('appServiceAppSettings')]",
