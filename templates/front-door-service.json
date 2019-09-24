@@ -1,0 +1,285 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "frontDoorName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the frontdoor resource."
+      }
+    },
+    "backendAppServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The address of the backend app services."
+      }
+    },
+    "customDomainName": {
+      "type": "string",
+      "defaultvalue": "",
+      "metadata": {
+        "description": "The hostname of the frontendEndpoints. Must be a domain name."
+      }
+    },
+    "wafPolicyName": {
+      "type": "string",
+      "metadata": {
+        "description": "WAF policy name"
+      }
+    },
+    "wafState": {
+      "type": "string",
+      "defaultvalue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "metadata": {
+        "description": "WAF state"
+      }
+    },
+    "wafMode": {
+      "type": "string",
+      "defaultvalue": "Detection",
+      "allowedValues": [
+        "Detection",
+        "Prevention"
+      ],
+      "metadata": {
+        "description": "WAF Mode"
+      }
+    },
+    "wafRedirectURL": {
+      "type": "string",
+      "defaultvalue": "http://localhost",
+      "metadata": {
+        "description": "Redirect traffic to address when WAF prevent access"
+      }
+    },
+    "settingName": {
+      "type": "string",
+      "defaultValue": "FDDiagnosticSetting",
+      "metadata": {
+        "description": "Name for the diagnostic setting resource. Eg. 'archiveToStorage' or 'forSecurityTeam'."
+      }
+    },
+    "workspaceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Name of the Log Analytics workspace to which logs will be sent."
+      }
+    }
+  },
+  "variables": {
+    "deploymentUrlBase": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/",
+    "storageAccountName": "[replace(concat(parameters('frontDoorName'), 'str'), '-', '')]",
+    "workspaceId": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspaceId'))]",
+    "frontdoorLocation": "global",
+    "wafPolicyLocation": "global",
+    "wafpolicyref": "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', parameters('wafPolicyName'))]",
+    "customDomainFrontendEndpoint": {
+      "name": "[concat(parameters('frontDoorName'),'-','frontendEndpoints2')]",
+      "properties": {
+        "hostName": "[parameters('customDomainName')]",
+        "sessionAffinityEnabledState": "Disabled",
+        "sessionAffinityTtlSeconds": 0,
+        "resourceState": "Enabled",
+        "webApplicationFirewallPolicyLink": {
+          "id": "[variables('wafpolicyref')]"
+        }
+      }
+    },
+    "customDomainRoutingFrontendEndpoint": {
+      "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints', parameters('frontDoorName'), concat(parameters('frontDoorName'),'-','frontendEndpoints2'))]"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-04-01",
+      "type": "Microsoft.Network/frontdoors",
+      "name": "[parameters('frontDoorName')]",
+      "location": "[variables('frontdoorLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies/', parameters('wafPolicyName'))]"
+      ],
+      "tags": {},
+      "properties": {
+        "friendlyName": "[parameters('frontDoorName')]",
+        "enabledState": "Enabled",
+        "healthProbeSettings": [
+          {
+            "name": "[concat(parameters('frontDoorName'),'-','healthProbeSettings')]",
+            "properties": {
+              "path": "/",
+              "protocol": "Https",
+              "intervalInSeconds": 30
+            }
+          }
+        ],
+        "loadBalancingSettings": [
+          {
+            "name": "[concat(parameters('frontDoorName'),'-','loadBalancingSettings')]",
+            "properties": {
+              "sampleSize": 4,
+              "successfulSamplesRequired": 2,
+              "additionalLatencyMilliseconds": 0
+            }
+          }
+        ],
+        "frontendEndpoints": [
+          {
+            "name": "[concat(parameters('frontDoorName'),'-','frontendEndpoints')]",
+            "properties": {
+              "hostName": "[concat(parameters('frontDoorName'), '.azurefd.net')]",
+              "sessionAffinityEnabledState": "Disabled",
+              "sessionAffinityTtlSeconds": 0,
+              "webApplicationFirewallPolicyLink": {
+                "id": "[variables('wafpolicyref')]"
+              }
+            }
+          },
+          "[if(greater(length(parameters('customDomainName')),0), variables('customDomainFrontendEndpoint'), json('null'))]"
+        ],
+        "backendPools": [
+          {
+            "name": "[concat(parameters('frontDoorName'),'-','backendPool')]",
+            "properties": {
+              "backends": [
+                {
+                  "address": "[parameters('backendAppServiceName')]",
+                  "enabledState": "Enabled",
+                  "httpPort": 80,
+                  "httpsPort": 443,
+                  "priority": 1,
+                  "weight": 50,
+                  "backendHostHeader": "[parameters('backendAppServiceName')]"
+                }
+              ],
+              "loadBalancingSettings": {
+                "id": "[resourceId('Microsoft.Network/frontDoors/loadBalancingSettings', parameters('frontDoorName'), concat(parameters('frontDoorName'),'-','loadBalancingSettings'))]"
+              },
+              "healthProbeSettings": {
+                "id": "[resourceId('Microsoft.Network/frontDoors/healthProbeSettings', parameters('frontDoorName'), concat(parameters('frontDoorName'),'-','healthProbeSettings'))]"
+              }
+            }
+          }
+        ],
+        "routingRules": [
+          {
+            "name": "[concat(parameters('frontDoorName'),'-','routingRules')]",
+            "properties": {
+              "frontendEndpoints": [
+                {
+                  "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints', parameters('frontDoorName'), concat(parameters('frontDoorName'),'-','frontendEndpoints'))]"
+                },
+                "[if(greater(length(parameters('customDomainName')),0), variables('customDomainRoutingFrontendEndpoint'),json('null'))]"
+              ],
+              "acceptedProtocols": [
+                "Http",
+                "Https"
+              ],
+              "patternsToMatch": [
+                "/*"
+              ],
+              "enabledState": "Enabled",
+              "routeConfiguration": {
+                "@odata.type": "#Microsoft.Azure.FrontDoor.Models.FrontdoorForwardingConfiguration",
+                "forwardingProtocol": "MatchRequest",
+                "backendPool": {
+                  "id": "[resourceId('Microsoft.Network/frontDoors/backendPools', parameters('frontDoorName'), concat(parameters('frontDoorName'),'-','backendPool'))]"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "resources": [
+        {
+          "type": "providers/diagnosticSettings",
+          "name": "[concat('Microsoft.Insights/', parameters('settingName'))]",
+          "dependsOn": [
+            "[parameters('frontDoorName')]",
+            "storage-account"
+          ],
+          "apiVersion": "2017-05-01-preview",
+          "properties": {
+            "name": "[parameters('settingName')]",
+            "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+            "workspaceId": "[if(greater(length(parameters('workspaceId')),0), variables('workspaceId'), json('null'))]",
+            "logs": [
+              {
+                "category": "FrontdoorAccessLog",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": 14,
+                  "enabled": false
+                }
+              },
+              {
+                "category": "FrontdoorWebApplicationFirewallLog",
+                "enabled": true,
+                "retentionPolicy": {
+                  "days": 14,
+                  "enabled": false
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "category": "AllMetrics",
+                "enabled": true,
+                "retentionPolicy": {
+                  "enabled": false,
+                  "days": 14
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "storage-account",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'storage-account.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "storageAccountName": {
+            "value": "[variables('storageAccountName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2019-03-01",
+      "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
+      "name": "[parameters('wafPolicyName')]",
+      "location": "[variables('wafPolicyLocation')]",
+      "tags": {},
+      "properties": {
+        "policySettings": {
+          "enabledState": "[parameters('wafState')]",
+          "mode": "[parameters('wafMode')]",
+          "redirectUrl": "[parameters('wafRedirectURL')]",
+          "customBlockResponseStatusCode": 403,
+          "customBlockResponseBody": null
+        },
+        "managedRules": {
+          "managedRuleSets": [
+            {
+              "ruleSetType": "DefaultRuleSet",
+              "ruleSetVersion": "1.0",
+              "ruleGroupOverrides": []
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
