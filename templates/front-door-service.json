@@ -63,13 +63,6 @@
         "description": "Name for the diagnostic setting resource. Eg. 'archiveToStorage' or 'forSecurityTeam'."
       }
     },
-    "storageAccountName": {
-      "type": "string",
-      "defaultValue": "batqamcfestr",
-      "metadata": {
-        "description": "Name of the Storage Account in which Diagnostic Logs should be saved."
-      }
-    },
     "workspaceId": {
       "type": "string",
       "defaultValue": "/subscriptions/44e591f2-68a5-4035-a791-a688e0b3c5e0/resourceGroups/bat-qa-mcfe-rg/providers/Microsoft.OperationalInsights/workspaces/bat-qa-mcf-fd-law",
@@ -79,6 +72,8 @@
     }
   },
   "variables": {
+    "deploymentUrlBase": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/",
+    "storageAccountName": "[replace(concat(parameters('frontDoorName'), 'str'), '-', '')]",
     "frontdoorLocation": "global",
     "wafPolicyLocation": "global",
     "wafpolicyref": "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', parameters('wafPolicyName'))]",
@@ -203,13 +198,14 @@
           "type": "providers/diagnosticSettings",
           "name": "[concat('Microsoft.Insights/', parameters('settingName'))]",
           "dependsOn": [
-            "[parameters('frontDoorName')]"
+            "[parameters('frontDoorName')]",
+            "storage-account"
           ],
           "apiVersion": "2017-05-01-preview",
           "properties": {
             "name": "[parameters('settingName')]",
-            "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-            "workspaceId": "[parameters('workspaceId')]",
+            "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+            "workspaceId": "[if(greater(length(parameters('workspaceId')),0), variables('customDomainFrontendEndpoint'), json('null'))]",
             "logs": [
               {
                 "category": "FrontdoorAccessLog",
@@ -241,6 +237,23 @@
           }
         }
       ]
+    },
+    {
+      "name": "storage-account",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2017-05-10",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'storage-account.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "storageAccountName": {
+            "value": "[variables('storageAccountName')]"
+          }
+        }
+      }
     },
     {
       "apiVersion": "2019-03-01",
