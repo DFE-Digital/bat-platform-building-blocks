@@ -67,13 +67,14 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Azure Resource ID of the Log Analytics workspace for the Log Analytics workspace to which logs will be sent."
+        "description": "Name of the Log Analytics workspace to which logs will be sent."
       }
     }
   },
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/",
     "storageAccountName": "[replace(concat(parameters('frontDoorName'), 'str'), '-', '')]",
+    "workspaceId": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspaceId'))]",
     "frontdoorLocation": "global",
     "wafPolicyLocation": "global",
     "wafpolicyref": "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', parameters('wafPolicyName'))]",
@@ -205,7 +206,7 @@
           "properties": {
             "name": "[parameters('settingName')]",
             "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-            "workspaceId": "[if(greater(length(parameters('workspaceId')),0), variables('customDomainFrontendEndpoint'), json('null'))]",
+            "workspaceId": "[if(greater(length(parameters('workspaceId')),0), variables('workspaceId'), json('null'))]",
             "logs": [
               {
                 "category": "FrontdoorAccessLog",
