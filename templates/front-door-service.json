@@ -65,7 +65,7 @@
     },
     "workspaceId": {
       "type": "string",
-      "defaultValue": "/subscriptions/44e591f2-68a5-4035-a791-a688e0b3c5e0/resourceGroups/bat-qa-mcfe-rg/providers/Microsoft.OperationalInsights/workspaces/bat-qa-mcf-fd-law",
+      "defaultValue": "",
       "metadata": {
         "description": "Azure Resource ID of the Log Analytics workspace for the Log Analytics workspace to which logs will be sent."
       }
