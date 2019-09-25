@@ -78,8 +78,6 @@
     }
   },
   "variables": {
-    "deploymentUrlBase": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/",
-    "storageAccountName": "[replace(concat(parameters('frontDoorName'), 'str'), '-', '')]",
     "workspaceId": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspaceId'))]",
     "frontdoorLocation": "global",
     "wafPolicyLocation": "global",
