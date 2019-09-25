@@ -69,6 +69,12 @@
       "metadata": {
         "description": "Name of the Log Analytics workspace to which logs will be sent."
       }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the storage account in which FD logs will be archived."
+      }
     }
   },
   "variables": {
@@ -205,7 +211,7 @@
           "apiVersion": "2017-05-01-preview",
           "properties": {
             "name": "[parameters('settingName')]",
-            "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+            "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
             "workspaceId": "[if(greater(length(parameters('workspaceId')),0), variables('workspaceId'), json('null'))]",
             "logs": [
               {
@@ -238,23 +244,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "storage-account",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('deploymentUrlBase'), 'storage-account.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "storageAccountName": {
-            "value": "[variables('storageAccountName')]"
-          }
-        }
-      }
     },
     {
       "apiVersion": "2019-03-01",
