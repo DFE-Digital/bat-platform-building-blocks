@@ -63,7 +63,7 @@
       "type": "bool",
       "defaultValue": false,
       "metadata": {
-        "description": " Configures a web site to allow clients to connect over http2.0"
+        "description": "Configures a web site to allow clients to connect over http2.0"
       }
     },
     "appAlwaysOn": {
@@ -123,6 +123,7 @@
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
           "appCommandLine": "[parameters('customStartupCommand')]"
         },
+        "http20Enabled": "[parameters('http20Enabled')]",
         "httpsOnly": true
       },
       "dependsOn": [
