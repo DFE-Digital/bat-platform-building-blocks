@@ -58,7 +58,7 @@
       "type": "bool",
       "defaultValue": false,
       "metadata": {
-        "description": " Configures a web site to allow clients to connect over http2.0"
+        "description": "Configures a web site to allow clients to connect over http2.0"
       }
     },
     "appServiceVirtualApplications": {
