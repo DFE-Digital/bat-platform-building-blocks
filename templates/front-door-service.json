@@ -67,7 +67,7 @@
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Name of the Log Analytics workspace to which logs will be sent."
+        "description": "Log Analytics workspace id to which logs will be sent."
       }
     },
     "storageAccountName": {
@@ -78,7 +78,6 @@
     }
   },
   "variables": {
-    "workspaceId": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',resourceGroup().name,'/providers/Microsoft.OperationalInsights/workspaces/',parameters('workspaceId'))]",
     "frontdoorLocation": "global",
     "wafPolicyLocation": "global",
     "wafpolicyref": "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', parameters('wafPolicyName'))]",
@@ -209,7 +208,7 @@
           "properties": {
             "name": "[parameters('settingName')]",
             "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-            "workspaceId": "[if(greater(length(parameters('workspaceId')),0), variables('workspaceId'), json('null'))]",
+            "workspaceId": "[if(greater(length(parameters('workspaceId')),0), parameters('workspaceId'), json('null'))]",
             "logs": [
               {
                 "category": "FrontdoorAccessLog",
