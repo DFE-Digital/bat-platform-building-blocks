@@ -11,6 +11,13 @@
     "attachedService": {
       "defaultValue": "",
       "type": "string"
+    },
+    "disableIpMasking": {
+      "defaultValue": false,
+      "type": "bool",
+      "metadata": {
+        "description": "Whether to disable IP masking or not. Defaults to `false`"
+      }
     }
   },
   "resources": [
@@ -24,7 +31,8 @@
         "[concat('hidden-link:', resourceId('Microsoft.Web/sites', parameters('attachedService')))]": "Resource"
       },
       "properties": {
-        "Application_Type": "web"
+        "Application_Type": "web",
+        "DisableIpMasking": "[parameters('disableIpMasking')]"
       }
     }
   ],
