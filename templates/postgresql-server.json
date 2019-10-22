@@ -52,7 +52,7 @@
       "allowedValues": [ "enabled", "disabled" ],
       "defaultValue": "disabled",
       "metadata": {
-	"description": "Used to configure backups for GRS storage. If disabled LRS storage will be used."
+        "description": "Used to configure backups for GRS storage. If disabled LRS storage will be used."
       }
     }
   },
