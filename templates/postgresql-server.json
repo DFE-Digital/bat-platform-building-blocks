@@ -35,7 +35,7 @@
       "allowedValues": [ "enabled", "disabled" ],
       "defaultValue": "disabled",
       "metadata": {
-	"description": "Used to configure autogrow for database storage. If enabled database storage will automatically be increased by 5GB when the free storage is below the greater of 1GB or 10% of the provisioned storage."
+        "description": "Used to configure autogrow for database storage. If enabled database storage will automatically be increased by 5GB when the free storage is below the greater of 1GB or 10% of the provisioned storage."
       }
     },
     "backupRetentionDays": {
@@ -44,7 +44,7 @@
       "maxValue": 35,
       "defaultValue": 35,
       "metadata": {
-	"description": "Retention period for database backups in days."
+        "description": "Retention period for database backups in days."
       }
     },
     "backupToGRS": {
