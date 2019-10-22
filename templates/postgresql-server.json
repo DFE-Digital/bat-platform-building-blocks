@@ -29,6 +29,31 @@
     },
     "storageAccountName": {
       "type": "string"
+    },
+    "storageAutoGrow": {
+      "type": "string",
+      "allowedValues": [ "enabled", "disabled" ],
+      "defaultValue": "disabled",
+      "metadata": {
+        "description": "Used to configure autogrow for database storage. If enabled database storage will automatically be increased by 5GB when the free storage is below the greater of 1GB or 10% of the provisioned storage."
+      }
+    },
+    "backupRetentionDays": {
+      "type": "int",
+      "minValue": 7,
+      "maxValue": 35,
+      "defaultValue": 35,
+      "metadata": {
+        "description": "Retention period for database backups in days."
+      }
+    },
+    "backupToGRS": {
+      "type": "string",
+      "allowedValues": [ "enabled", "disabled" ],
+      "defaultValue": "disabled",
+      "metadata": {
+        "description": "Used to configure backups for GRS storage. If disabled LRS storage will be used."
+      }
     }
   },
   "variables": {
@@ -44,8 +69,9 @@
       "properties": {
         "storageProfile": {
           "storageMB": "[parameters('postgresSku').size]",
-          "backupRetentionDays": 35,
-          "geoRedundantBackup": "Disabled"
+          "backupRetentionDays": "[parameters('backupRetentionDays')]",
+          "geoRedundantBackup": "[parameters('backupToGRS')]",
+          "storageAutoGrow": "[parameters('storageAutoGrow')]"
         },
         "version": "9.6",
         "sslEnforcement": "Enabled",
