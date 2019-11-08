@@ -22,7 +22,8 @@
     },
     "command": {
       "type": "array",
-      "defaultValue": [],
+      "defaultValue": [
+      ],
       "metadata": {
         "description": "The commands to execute within the container instance in exec form. - string"
       }
@@ -66,7 +67,8 @@
     },
     "environmentVariables": {
       "type": "array",
-      "defaultValue": [],
+      "defaultValue": [
+      ],
       "metadata": {
         "description": "List of environment variables in an array format. Provide a name and value field for each variable and name and securevalue for hidden attributes i.e. secrets and password "
       }
@@ -77,11 +79,18 @@
       "metadata": {
         "description": "The name of the network profile that will attach to the container instance"
       }
+    },
+    "networkResourceGroup": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Name of the resource group if different from the container instance"
+      }
     }
   },
   "variables": {
     "networkProfile": {
-      "Id": "[if(greater(length(parameters('networkProfileName')) ,0), resourceId('Microsoft.Network/networkProfiles', parameters('networkProfileName')), 'placeholder')]"
+      "Id": "[if(greater(length(parameters('networkProfileName')) ,0), resourceId(parameters('networkResourceGroup'),'Microsoft.Network/networkProfiles', parameters('networkProfileName')), 'placeholder')]"
     }
   },
   "resources": [
