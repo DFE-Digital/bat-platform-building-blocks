@@ -22,8 +22,7 @@
     },
     "command": {
       "type": "array",
-      "defaultValue": [
-      ],
+      "defaultValue": [],
       "metadata": {
         "description": "The commands to execute within the container instance in exec form. - string"
       }
@@ -67,8 +66,7 @@
     },
     "environmentVariables": {
       "type": "array",
-      "defaultValue": [
-      ],
+      "defaultValue": [],
       "metadata": {
         "description": "List of environment variables in an array format. Provide a name and value field for each variable and name and securevalue for hidden attributes i.e. secrets and password "
       }
