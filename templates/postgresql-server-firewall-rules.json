@@ -22,6 +22,13 @@
         "description": "Name of the server to add firewall rules to"
       }
     },
+    "allowAzureServicesAccess": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Allow"
+      }
+    },
     "subnetResourceIdList": {
       "type": "array",
       "defaultValue": [],
@@ -46,6 +53,16 @@
         "mode": "serial",
         "name": "firewallRuleCopy",
         "batchSize": 3
+      }
+    },
+    {
+      "name": "[concat(parameters('serverName'), '/AllowAllWindowsAzureIps')]",
+      "condition": "[parameters('allowAzureServicesAccess')]",
+      "type": "Microsoft.DBforPostgreSQL/servers/firewallRules",
+      "apiVersion": "2017-12-01",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
       }
     },
     {
