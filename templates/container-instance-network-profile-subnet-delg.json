@@ -51,6 +51,9 @@
       "type": "Microsoft.Network/networkProfiles",
       "apiVersion": "2018-07-01",
       "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[parameters('vnetName')]"
+        ],
       "properties": {
         "containerNetworkInterfaceConfigurations": [
           {
