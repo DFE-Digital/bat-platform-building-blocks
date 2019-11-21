@@ -29,10 +29,10 @@
         "description": "The name of the vNet that the container instance will connect to"
       }
     },
-      "vnetAddressSpaceCIDR": {
+    "vnetAddressSpaceCIDR": {
       "type": "string",
       "metadata": {
-        "description": "The name of the vNet that the container instance will connect to"
+        "description": "The address space of the vNet that the container instance will connect to"
       }
     },
     "subnetName": {
@@ -48,18 +48,15 @@
       }
     }
   },
-  "variables": {
-    "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/"
-  },
   "resources": [
-{
+    {
       "name": "[parameters('networkProfileName')]",
       "type": "Microsoft.Network/networkProfiles",
       "apiVersion": "2018-07-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[parameters('vnetName')]"
-        ],
+      ],
       "properties": {
         "containerNetworkInterfaceConfigurations": [
           {
@@ -81,46 +78,37 @@
       }
     },
     {
+      "type": "Microsoft.Network/virtualNetworks",
       "name": "[parameters('vnetName')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2018-11-01",
+      "location": "[resourceGroup().location]",
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('templateBaseUrl'), 'virtual-network.json')]",
-          "contentVersion": "1.0.0.0"
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetAddressSpaceCIDR')]"
+          ]
         },
-        "parameters": {
-          "vnetName": {
-            "value": "[parameters('vnetName')]"
-          },
-          "vnetAddressSpaceCIDR": {
-            "value": "[parameters('vnetAddressSpaceCIDR')]"
-          },
-          "subnetConfiguration": {
-            "value": [
-              {
-                "name": "[parameters('subnetName')]",
-                "properties": {
-                  "addressPrefix": "[parameters('subnetAddressPrefix')]",
-                  "delegations": [
-                    {
-                      "name": "DelegationService",
-                      "properties": {
-                        "serviceName": "Microsoft.ContainerInstance/containerGroups"
-                      }
-                    }
-                  ],
-                  "serviceEndpoints": [
-                    {
-                      "service": "Microsoft.Sql"
-                    }
-                  ]
+        "subnets": [
+          {
+            "name": "[parameters('subnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetAddressPrefix')]",
+              "delegations": [
+                {
+                  "name": "DelegationService",
+                  "properties": {
+                    "serviceName": "Microsoft.ContainerInstance/containerGroups"
+                  }
                 }
-              }
-            ]
+              ],
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Sql"
+                }
+              ]
+            }
           }
-        }
+        ]
       }
     }
   ]
