@@ -29,6 +29,12 @@
         "description": "The name of the vNet that the container instance will connect to"
       }
     },
+      "vnetAddressSpaceCIDR": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the vNet that the container instance will connect to"
+      }
+    },
     "subnetName": {
       "type": "string",
       "metadata": {
@@ -46,7 +52,7 @@
     "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/"
   },
   "resources": [
-    {
+{
       "name": "[parameters('networkProfileName')]",
       "type": "Microsoft.Network/networkProfiles",
       "apiVersion": "2018-07-01",
@@ -87,6 +93,9 @@
         "parameters": {
           "vnetName": {
             "value": "[parameters('vnetName')]"
+          },
+          "vnetAddressSpaceCIDR": {
+            "value": "[parameters('vnetAddressSpaceCIDR')]"
           },
           "subnetConfiguration": {
             "value": [
