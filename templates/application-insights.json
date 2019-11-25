@@ -36,7 +36,7 @@
     },
     {
       "apiVersion": "2015-05-01",
-      "name": "[concat(parameters('appInsightsName'), '-at-', parameters('availabilityTests')[copyIndex('webTestsCopy')].nameSuffix)]",
+      "name": "[if(greater(length(parameters('availabilityTests')), 0), concat(parameters('appInsightsName'), '-at-', parameters('availabilityTests')[copyIndex('webTestsCopy')].nameSuffix), 'UNUSED_WEBTEST')]",
       "type": "Microsoft.Insights/webtests",
       "condition": "[greater(length(parameters('availabilityTests')), 0)]",
       "location": "[resourceGroup().location]",
