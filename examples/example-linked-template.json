@@ -34,7 +34,14 @@
     }
   },
   "variables": {
-    "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/"
+    "templateBaseUrl": "https://raw.githubusercontent.com/DFE-Digital/bat-platform-building-blocks/master/templates/",
+    "availabilityTests": [
+      {
+        "nameSuffix": "root",
+        "url": "[concat('https://', parameters('appServiceName'), '.azurewebsites.net')]",
+        "guid": "[guid(parameters('appServiceName')]"
+      }
+    ]
   },
   "resources": [
     {
@@ -107,6 +114,9 @@
           },
           "attachedService": {
             "value": "[parameters('appServiceName')]"
+          },
+          "availabilityTests": {
+            "value": "[variables('availabilityTests')]"
           }
         }
       }
