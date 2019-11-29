@@ -1,0 +1,1545 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Target resource group name."
+      }
+    },
+    "serviceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The abbreviation of the service name to be used when naming a resource."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "The hosting environment (qa, production, sandbox, etc)"
+      }
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the app service plan."
+      }
+    },
+    "appServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the app service."
+      }
+    },
+    "databaseServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the database server."
+      }
+    },
+    "redisCacheName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the redis cache resource."
+      }
+    },
+    "containerInstances": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Optional array of container instance names to be monitored."
+      }
+    }
+  },
+  "variables": {
+    "defaultCpuUsage": [
+      {
+        "resourceMetadata": {
+          "id": "[resourceId('Microsoft.Web/serverFarms', parameters('appServicePlanName'))]"
+        },
+        "name": "CpuPercentage",
+        "aggregationType": 4,
+        "namespace": "microsoft.web/serverfarms",
+        "metricVisualization": {
+          "displayName": "CPU Percentage",
+          "resourceDisplayName": "[parameters('appServicePlanName')]"
+        }
+      },
+      {
+        "resourceMetadata": {
+          "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+        },
+        "name": "cpu_percent",
+        "aggregationType": 4,
+        "namespace": "microsoft.dbforpostgresql/servers",
+        "metricVisualization": {
+          "displayName": "CPU percent",
+          "resourceDisplayName": "[parameters('databaseServerName')]"
+        }
+      }
+    ],
+    "defaultMemoryUsage": [
+      {
+        "resourceMetadata": {
+          "id": "[resourceId('Microsoft.Cache/Redis', parameters('redisCacheName'))]"
+        },
+        "name": "usedmemory",
+        "aggregationType": 4,
+        "namespace": "microsoft.cache/redis",
+        "metricVisualization": {
+          "displayName": "Used Memory",
+          "resourceDisplayName": "[parameters('redisCacheName')]"
+        }
+      }
+    ],
+    "copy": [
+      {
+        "name": "containerCpuUsage",
+        "count": "[if(greater(length(parameters('containerInstances')), 0), length(parameters('containerInstances')), 1)]",
+        "input": {
+          "resourceMetadata": {
+            "id": "[if(greater(length(parameters('containerInstances')), 0), resourceId('Microsoft.ContainerInstance/containerGroups', parameters('containerInstances')[copyIndex('containerCpuUsage')]), 'UNUSED')]"
+          },
+          "name": "CpuUsage",
+          "aggregationType": 4,
+          "namespace": "microsoft.containerinstance/containergroups",
+          "metricVisualization": {
+            "displayName": "CPU Usage",
+            "resourceDisplayName": "[if(greater(length(parameters('containerInstances')), 0), parameters('containerInstances')[copyIndex('containerCpuUsage')], 'UNSUED')]"
+          }
+        }
+      },
+      {
+        "name": "containerMemoryUsage",
+        "count": "[if(greater(length(parameters('containerInstances')), 0), length(parameters('containerInstances')), 1)]",
+        "input": {
+          "resourceMetadata": {
+            "id": "[if(greater(length(parameters('containerInstances')), 0), resourceId('Microsoft.ContainerInstance/containerGroups', parameters('containerInstances')[copyIndex('containerMemoryUsage')]), 'UNUSED')]"
+	  },
+          "name": "MemoryUsage",
+          "aggregationType": 4,
+          "namespace": "microsoft.containerinstance/containergroups",
+          "metricVisualization": {
+            "displayName": "Memory Usage",
+            "resourceDisplayName": "[if(greater(length(parameters('containerInstances')), 0), parameters('containerInstances')[copyIndex('containerMemoryUsage')], 'UNSUED')]"
+          }
+        }
+      }
+    ]
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01-preview",
+      "name": "[concat(parameters('resourceGroupName'), '-dashboard')]",
+      "type": "Microsoft.Portal/dashboards",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "hidden-title": "[toUpper(concat(parameters('serviceName'), ' Dashboard (', parameters('environment'), ')'))]",
+        "Environment": "[parameters('environment')]",
+        "Parent Business": "TBC",
+        "Service Offering": "TBC"
+      },
+      "properties": {
+        "lenses": {
+          "0": {
+            "order": 0,
+            "parts": {
+              "0": {
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Insights/components', parameters('appServiceName'))]"
+                              },
+                              "name": "availabilityResults/availabilityPercentage",
+                              "aggregationType": 4,
+                              "namespace": "microsoft.insights/components",
+                              "metricVisualization": {
+                                "displayName": "Availability",
+                                "color": "#47BDF5"
+                              }
+                            }
+                          ],
+                          "title": "Average availability",
+                          "visualization": {
+                            "chartType": 3,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true,
+                            "destinationBlade": {
+                              "extensionName": "HubsExtension",
+                              "bladeName": "ResourceMenuBlade",
+                              "parameters": {
+                                "id": "[resourceId('Microsoft.Insights/components', parameters('appServiceName'))]",
+                                "menuid": "availability"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Insights/components', parameters('appServiceName'))]"
+                              },
+                              "name": "availabilityResults/availabilityPercentage",
+                              "aggregationType": 4,
+                              "namespace": "microsoft.insights/components",
+                              "metricVisualization": {
+                                "displayName": "Availability",
+                                "color": "#47BDF5"
+                              }
+                            }
+                          ],
+                          "title": "Average availability",
+                          "visualization": {
+                            "chartType": 3,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true,
+                            "destinationBlade": {
+                              "extensionName": "HubsExtension",
+                              "bladeName": "ResourceMenuBlade",
+                              "parameters": {
+                                "id": "[resourceId('Microsoft.Insights/components', parameters('appServiceName'))]",
+                                "menuid": "availability"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "1": {
+                "position": {
+                  "x": 4,
+                  "y": 0,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "Requests",
+                              "aggregationType": 1,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Requests",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "Requests",
+                              "aggregationType": 1,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Requests",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "disablePinning": true
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "filters": {
+                    "MsPortalFx_TimeRange": {
+                      "model": {
+                        "format": "local",
+                        "granularity": "1m",
+                        "relative": "60m"
+                      }
+                    }
+                  }
+                }
+              },
+              "2": {
+                "position": {
+                  "x": 8,
+                  "y": 0,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "AverageResponseTime",
+                              "aggregationType": 4,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Average Response Time",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "AverageResponseTime",
+                              "aggregationType": 4,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Average Response Time",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "disablePinning": true
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "filters": {
+                    "MsPortalFx_TimeRange": {
+                      "model": {
+                        "format": "local",
+                        "granularity": "1m",
+                        "relative": "60m"
+                      }
+                    }
+                  }
+                }
+              },
+              "3": {
+                "position": {
+                  "x": 12,
+                  "y": 0,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "BytesReceived",
+                              "aggregationType": 1,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Data In",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "BytesReceived",
+                              "aggregationType": 1,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Data In",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "disablePinning": true
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "filters": {
+                    "MsPortalFx_TimeRange": {
+                      "model": {
+                        "format": "local",
+                        "granularity": "1m",
+                        "relative": "60m"
+                      }
+                    }
+                  }
+                }
+              },
+              "4": {
+                "position": {
+                  "x": 16,
+                  "y": 0,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "BytesSent",
+                              "aggregationType": 1,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Data Out",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+                              },
+                              "name": "BytesSent",
+                              "aggregationType": 1,
+                              "metricVisualization": {
+                                "resourceDisplayName": "[parameters('appServiceName')]"
+                              }
+                            }
+                          ],
+                          "title": "Data Out",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "disablePinning": true
+                          },
+                          "openBladeOnClick": {
+                            "openBlade": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "filters": {
+                    "MsPortalFx_TimeRange": {
+                      "model": {
+                        "format": "local",
+                        "granularity": "1m",
+                        "relative": "60m"
+                      }
+                    }
+                  }
+                }
+              },
+              "5": {
+                "position": {
+                  "x": 0,
+                  "y": 3,
+                  "rowSpan": 1,
+                  "colSpan": 1
+                },
+                "metadata": {
+                  "inputs": [],
+                  "type": "Extension/HubsExtension/PartType/ClockPart",
+                  "settings": {
+                    "content": {
+                      "settings": {
+                        "location": "Coordinated Universal Time",
+                        "timezoneId": "GMT Standard Time",
+                        "timeFormat": "HH:mm",
+                        "version": 1
+                      }
+                    }
+                  }
+                }
+              },
+              "6": {
+                "position": {
+                  "x": 1,
+                  "y": 3,
+                  "rowSpan": 4,
+                  "colSpan": 7
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": "[if(greater(length(parameters('containerInstances')), 0), concat(variables('defaultCpuUsage'), variables('containerCpuUsage')), variables('defaultCpuUsage'))]",
+                          "title": "CPU Percentage",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          },
+                          "timespan": {
+                            "relative": {
+                              "duration": 3600000
+                            },
+                            "showUTCTime": false,
+                            "grain": 2
+                          }
+                        }
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": "[if(greater(length(parameters('containerInstances')), 0), concat(variables('defaultCpuUsage'), variables('containerCpuUsage')), variables('defaultCpuUsage'))]",
+                          "title": "CPU Percentage",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "filters": {
+                    "MsPortalFx_TimeRange": {
+                      "model": {
+                        "format": "local",
+                        "granularity": "1m",
+                        "relative": "60m"
+                      }
+                    }
+                  }
+                }
+              },
+              "7": {
+                "position": {
+                  "x": 8,
+                  "y": 3,
+                  "rowSpan": 4,
+                  "colSpan": 6
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/serverFarms', parameters('appServicePlanName'))]"
+                              },
+                              "name": "MemoryPercentage",
+                              "aggregationType": 4,
+                              "namespace": "microsoft.web/serverfarms",
+                              "metricVisualization": {
+                                "displayName": "Memory Percentage",
+                                "resourceDisplayName": "[parameters('appServicePlanName')]"
+                              }
+                            },
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "memory_percent",
+                              "aggregationType": 4,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Memory percent",
+                                "resourceDisplayName": "[parameters('databaseServerName')]"
+                              }
+                            }
+                          ],
+                          "title": "Memory Percentage",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          },
+                          "timespan": {
+                            "relative": {
+                              "duration": 3600000
+                            },
+                            "showUTCTime": false,
+                            "grain": 2
+                          }
+                        }
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.Web/serverFarms', parameters('appServicePlanName'))]"
+                              },
+                              "name": "MemoryPercentage",
+                              "aggregationType": 4,
+                              "namespace": "microsoft.web/serverfarms",
+                              "metricVisualization": {
+                                "displayName": "Memory Percentage",
+                                "resourceDisplayName": "[parameters('appServicePlanName')]"
+                              }
+                            },
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "memory_percent",
+                              "aggregationType": 4,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Memory percent",
+                                "resourceDisplayName": "[parameters('databaseServerName')]"
+                              }
+                            }
+                          ],
+                          "title": "Memory Percentage",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "filters": {
+                    "MsPortalFx_TimeRange": {
+                      "model": {
+                        "format": "local",
+                        "granularity": "1m",
+                        "relative": "60m"
+                      }
+                    }
+                  }
+                }
+              },
+              "8": {
+                "position": {
+                  "x": 14,
+                  "y": 3,
+                  "rowSpan": 4,
+                  "colSpan": 6
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": "[if(greater(length(parameters('containerInstances')), 0), concat(variables('defaultMemoryUsage'), variables('containerMemoryUsage')), variables('defaultMemoryUsage'))]",
+                          "title": "Memory Usage",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          },
+                          "timespan": {
+                            "relative": {
+                              "duration": 3600000
+                            },
+                            "showUTCTime": false,
+                            "grain": 2
+                          }
+                        }
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": "[if(greater(length(parameters('containerInstances')), 0), concat(variables('defaultMemoryUsage'), variables('containerMemoryUsage')), variables('defaultMemoryUsage'))]",
+                          "title": "Memory Usage",
+                          "titleKind": 2,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "filters": {
+                    "MsPortalFx_TimeRange": {
+                      "model": {
+                        "format": "local",
+                        "granularity": "1m",
+                        "relative": "60m"
+                      }
+                    }
+                  }
+                }
+              },
+              "9": {
+                "position": {
+                  "x": 0,
+                  "y": 4,
+                  "rowSpan": 1,
+                  "colSpan": 1
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "ComponentId",
+                      "value": {
+                        "Name": "[parameters('appServiceName')]",
+                        "SubscriptionId": "[subscription().subscriptionId]",
+                        "ResourceGroup": "[parameters('resourceGroupName')]"
+                      }
+                    },
+                    {
+                      "name": "TimeContext",
+                      "value": {
+                        "durationMs": 86400000,
+                        "endTime": null,
+                        "createdTime": "2018-05-04T01:20:33.345Z",
+                        "isInitialTime": true,
+                        "grain": 1,
+                        "useDashboardTimeRange": false
+                      }
+                    },
+                    {
+                      "name": "Version",
+                      "value": "1.0"
+                    },
+                    {
+                      "name": "componentId",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "id",
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/AppInsightsExtension/PartType/WebTestsPinnedPart",
+                  "asset": {
+                    "idInputName": "ComponentId",
+                    "type": "ApplicationInsights"
+                  }
+                }
+              },
+              "10": {
+                "position": {
+                  "x": 0,
+                  "y": 7,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "active_connections",
+                              "aggregationType": 3,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Active Connections"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Max Active Connections for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          }
+                        },
+                        "version": 2
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "active_connections",
+                              "aggregationType": 3,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Active Connections"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Max Active Connections for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        },
+                        "version": 2
+                      }
+                    }
+                  }
+                }
+              },
+              "11": {
+                "position": {
+                  "x": 4,
+                  "y": 7,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "storage_percent",
+                              "aggregationType": 3,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Storage percent"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Max Active Connections for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          }
+                        },
+                        "version": 2
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "storage_percent",
+                              "aggregationType": 3,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Storage percent"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Max Storage percent for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        },
+                        "version": 2
+                      }
+                    }
+                  }
+                }
+              },
+              "12": {
+                "position": {
+                  "x": 8,
+                  "y": 7,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "io_consumption_percent",
+                              "aggregationType": 3,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "IO percent"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Max IO percent for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          }
+                        },
+                        "version": 2
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "io_consumption_percent",
+                              "aggregationType": 3,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "IO percent"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Max IO percent for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        },
+                        "version": 2
+                      }
+                    }
+                  }
+                }
+              },
+              "13": {
+                "position": {
+                  "x": 12,
+                  "y": 7,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "network_bytes_ingress",
+                              "aggregationType": 1,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Network In"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Sum Network In for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          }
+                        },
+                        "version": 2
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "network_bytes_ingress",
+                              "aggregationType": 1,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Network In"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Sum Network In for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        },
+                        "version": 2
+                      }
+                    }
+                  }
+                }
+              },
+              "14": {
+                "position": {
+                  "x": 16,
+                  "y": 7,
+                  "rowSpan": 3,
+                  "colSpan": 4
+                },
+                "metadata": {
+                  "inputs": [
+                    {
+                      "name": "sharedTimeRange",
+                      "isOptional": true
+                    },
+                    {
+                      "name": "options",
+                      "value": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "network_bytes_egress",
+                              "aggregationType": 1,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Network Out"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Sum Network Out for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            }
+                          }
+                        },
+                        "version": 2
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "type": "Extension/HubsExtension/PartType/MonitorChartPart",
+                  "settings": {
+                    "content": {
+                      "options": {
+                        "chart": {
+                          "metrics": [
+                            {
+                              "resourceMetadata": {
+                                "id": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('databaseServerName'))]"
+                              },
+                              "name": "network_bytes_egress",
+                              "aggregationType": 1,
+                              "namespace": "microsoft.dbforpostgresql/servers",
+                              "metricVisualization": {
+                                "displayName": "Network Out"
+                              }
+                            }
+                          ],
+                          "title": "[concat('Sum Network Out for ', parameters('databaseServerName'))]",
+                          "titleKind": 1,
+                          "visualization": {
+                            "chartType": 2,
+                            "legendVisualization": {
+                              "isVisible": true,
+                              "position": 2,
+                              "hideSubtitle": false
+                            },
+                            "axisVisualization": {
+                              "x": {
+                                "isVisible": true,
+                                "axisType": 2
+                              },
+                              "y": {
+                                "isVisible": true,
+                                "axisType": 1
+                              }
+                            },
+                            "disablePinning": true
+                          }
+                        },
+                        "version": 2
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "metadata": {
+          "model": {
+            "timeRange": {
+              "value": {
+                "relative": {
+                  "duration": 24,
+                  "timeUnit": 1
+                }
+              },
+              "type": "MsPortalFx.Composition.Configuration.ValueTypes.TimeRange"
+            },
+            "filterLocale": {
+              "value": "en-us"
+            },
+            "filters": {
+              "value": {
+                "MsPortalFx_TimeRange": {
+                  "model": {
+                    "format": "utc",
+                    "granularity": "auto",
+                    "relative": "24h"
+                  },
+                  "displayCache": {
+                    "name": "UTC Time",
+                    "value": "Past 24 hours"
+                  },
+                  "filteredPartIds": []
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
