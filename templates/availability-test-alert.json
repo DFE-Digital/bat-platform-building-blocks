@@ -1,0 +1,107 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appInsightsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the application insights resource."
+      }
+    },
+    "appInsightsId": {
+      "type": "string",
+      "metadata": {
+        "description": "ResourceId for Application Insights resource."
+      }
+    },
+    "alertName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the metric alert resource."
+      }
+    },
+    "actionGroupId": {
+      "type": "string",
+      "metadata": {
+        "description": "ResourceID for actionGroup resource."
+      }
+    },
+    "alertDescriptionText": {
+      "defaultValue": "",
+      "type": "string",
+      "metadata": {
+        "description": "Email alert description content to describe the alert cause."
+      }
+    },
+    "alertSeverity": {
+      "defaultValue": 1,
+      "minValue": 0,
+      "maxValue": 4,
+      "type": "int",
+      "metadata": {
+        "description": "Severity of the alert to raise."
+      }
+    },
+    "webTestId": {
+      "type": "string",
+      "metadata": {
+        "decsription": "ResourceId for the availability web test to generate alerts for."
+      }
+    },
+    "evaluationFrequency": {
+      "type": "string",
+      "defaultValue": "PT1M",
+      "metadata": {
+        "decsription": "Frequency with which to monitor the metric data for this alert rule. Default is once a minute."
+      }
+    },
+    "windowSize": {
+      "type": "string",
+      "defaultValue": "PT5M",
+      "metadata": {
+        "decsription": "The time window over which to perform the evaluation of the metric data. Default is 5 minutes."
+      }
+    },
+    "failedLocationCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "decsription": "Number of times the test can fail before an alert is sent."
+      }
+    }
+  },
+  "variables": {
+    "scopes": "[createArray(parameters('appInsightsId'), parameters('webTestId'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2018-03-01",
+      "type": "microsoft.insights/metricalerts",
+      "name": "[parameters('alertName')]",
+      "location": "global",
+      "tags": {
+        "[concat('hidden-link:', resourceId('Microsoft.Insights/components', parameters('appInsightsName')))]": "Resource"
+      },
+      "properties": {
+        "description": "[parameters('alertDescriptionText')]",
+        "severity": "[parameters('alertSeverity')]",
+        "enabled": true,
+        "scopes": "[variables('scopes')]",
+        "evaluationFrequency": "[parameters('evaluationFrequency')]",
+        "windowSize": "[parameters('windowSize')]",
+        "criteria": {
+          "odata.type": "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria",
+          "componentId": "[parameters('appInsightsId')]",
+          "webTestId": "[parameters('webTestId')]",
+          "failedLocationCount": "[parameters('failedLocationCount')]"
+        },
+        "actions": [
+          {
+            "actionGroupId": "[parameters('actionGroupId')]",
+            "webHookProperties": {}
+          }
+        ]
+      }
+    }
+  ]
+}

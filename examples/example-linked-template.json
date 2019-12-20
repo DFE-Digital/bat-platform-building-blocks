@@ -31,6 +31,18 @@
       "metadata": {
         "description": "The priority of the traffic manger endpoint."
       }
+    },
+    "alertEmailRecipientName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the alert email recipient."
+      }
+    },
+    "alertEmailRecipientAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "The email address of the alert email recipient."
+      }
     }
   },
   "variables": {
@@ -40,6 +52,12 @@
         "nameSuffix": "root",
         "url": "[concat('https://', parameters('appServiceName'), '.azurewebsites.net')]",
         "guid": "[guid(parameters('appServiceName')]"
+      }
+    ],
+    "alertRecipientEmails": [
+      {
+        "displayName": "[parameters('alertEmailRecipientName')]",
+        "emailAddress": "[parameters('alertEmailRecipientAddress')]"
       }
     ]
   },
@@ -114,12 +132,91 @@
           },
           "attachedService": {
             "value": "[parameters('appServiceName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "availability-test",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'availability-tests.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appInsightsName": {
+            "value": "[parameters('appServiceName')]"
           },
           "availabilityTests": {
             "value": "[variables('availabilityTests')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "app-insights"
+      ]
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "action-group",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'action-group.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appInsightsName": {
+            "value": "[parameters('appServiceName')]"
+          },
+          "alertRecipientEmails": {
+            "value": "[variables('alertRecipientEmails')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "app-insights"
+      ]
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "availability-test-alert",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'availability-test-alert.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appInsightsName": {
+            "value": "[parameters('appServiceName')]"
+          },
+          "appInsightsId": {
+            "value": "[reference('app-insights').outputs.AppInsightsResourceId.value]"
+          },
+          "alertName": {
+            "value": "site-root"
+          },
+          "actionGroupId": {
+            "value": "[reference('action-group', '2019-03-01').outputs.actionGroupResourceId.value]"
+          },
+          "alertDescriptionText": {
+            "value": "The site root test failed."
+          },
+          "webTestId": {
+            "value": "[resourceId('microsoft.insights/webtests', concat(parameters('appServiceName'), '-at-', variables('availabilityTests').nameSuffix))]"
+          }
+        }
+      },
+      "dependsOn": [
+        "action-group",
+        "availability-test"
+      ]
     },
     {
       "name": "traffic-manager-profile",
