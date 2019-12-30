@@ -54,6 +54,10 @@
       "metadata": {
         "description": "Used to configure backups for GRS storage. If disabled LRS storage will be used."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
@@ -65,6 +69,7 @@
       "type": "Microsoft.DBforPostgreSQL/servers",
       "apiVersion": "2017-12-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "sku": "[parameters('postgresSku')]",
       "properties": {
         "storageProfile": {

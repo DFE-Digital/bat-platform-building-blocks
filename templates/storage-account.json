@@ -45,6 +45,10 @@
         "StorageV2",
         "BlobStorage"
       ]
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {},
@@ -54,11 +58,11 @@
       "name": "[parameters('storageAccountName')]",
       "type": "Microsoft.Storage/storageAccounts",
       "location": "[parameters('storageAccountLocation')]",
+      "tags": "[parameters('resourceTags')]",
       "sku": {
         "name": "[parameters('accountType')]"
       },
       "kind": "[parameters('storageKind')]",
-      "tags": {},
       "properties": {
         "encryption": {
           "services": {

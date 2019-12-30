@@ -22,6 +22,10 @@
       "metadata": {
         "description": "The routing method for the traffic manager profile. Only Priority is currently supported."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {},
@@ -31,6 +35,7 @@
       "type": "Microsoft.Network/trafficManagerProfiles",
       "name": "[parameters('profileName')]",
       "location": "global",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "profileStatus": "Enabled",
         "trafficRoutingMethod": "[parameters('trafficRoutingMethod')]",

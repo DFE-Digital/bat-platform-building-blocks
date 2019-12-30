@@ -46,6 +46,10 @@
       "metadata": {
         "description": "The address prefix for the subnet that the container instance will connect to"
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "resources": [
@@ -54,6 +58,7 @@
       "type": "Microsoft.Network/networkProfiles",
       "apiVersion": "2018-07-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "dependsOn": [
         "[parameters('vnetName')]"
       ],
@@ -82,6 +87,7 @@
       "name": "[parameters('vnetName')]",
       "apiVersion": "2018-11-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [

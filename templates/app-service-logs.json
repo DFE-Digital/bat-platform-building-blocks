@@ -49,6 +49,10 @@
       "metadata": {
         "description": "Gather detailed error messages from your web app."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "resources": [
@@ -57,6 +61,7 @@
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "applicationLogs": {
           "fileSystem": {

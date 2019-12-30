@@ -14,6 +14,15 @@
       "metadata": {
         "description": "Array of test objects to configure URLs to perform availability tests for."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
+    }
+  },
+  "variables": {
+    "tags": {
+      "[concat('hidden-link:', resourceId('Microsoft.Insights/components', parameters('appInsightsName')))]": "Resource"
     }
   },
   "resources": [
@@ -23,12 +32,10 @@
       "type": "Microsoft.Insights/webtests",
       "condition": "[greater(length(parameters('availabilityTests')), 0)]",
       "location": "[resourceGroup().location]",
+      "tags": "[union(variables('tags'),parameters('resourceTags'))]",
       "copy": {
         "name": "webTestsCopy",
         "count": "[if(greater(length(parameters('availabilityTests')), 0), length(parameters('availabilityTests')), 1)]"
-      },
-      "tags": {
-        "[concat('hidden-link:', resourceId('Microsoft.Insights/components', parameters('appInsightsName')))]": "Resource"
       },
       "properties": {
         "SyntheticMonitorId": "[concat(parameters('appInsightsName'), '-at-', parameters('availabilityTests')[copyIndex('webTestsCopy')].nameSuffix)]",

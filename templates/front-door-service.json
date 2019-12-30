@@ -75,6 +75,10 @@
       "metadata": {
         "description": "Name of the storage account in which FD logs will be archived."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
@@ -103,10 +107,10 @@
       "type": "Microsoft.Network/frontdoors",
       "name": "[parameters('frontDoorName')]",
       "location": "[variables('frontdoorLocation')]",
+      "tags": "[parameters('resourceTags')]",
       "dependsOn": [
         "[concat('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies/', parameters('wafPolicyName'))]"
       ],
-      "tags": {},
       "properties": {
         "friendlyName": "[parameters('frontDoorName')]",
         "enabledState": "Enabled",
@@ -246,7 +250,7 @@
       "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
       "name": "[parameters('wafPolicyName')]",
       "location": "[variables('wafPolicyLocation')]",
-      "tags": {},
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "policySettings": {
           "enabledState": "[parameters('wafState')]",

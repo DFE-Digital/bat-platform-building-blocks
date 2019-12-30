@@ -14,6 +14,10 @@
       "metadata": {
         "description": "A list of valid access policies to add to the key vault. See here for the schema reference: https://docs.microsoft.com/en-us/azure/templates/microsoft.keyvault/2018-02-14/vaults#AccessPolicyEntry"
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {},
@@ -23,6 +27,7 @@
       "name": "[parameters('keyVaultName')]",
       "apiVersion": "2015-06-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "accessPolicies": "[parameters('accessPolicies')]",
         "tenantId": "[subscription().tenantId]",
