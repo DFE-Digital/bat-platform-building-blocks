@@ -20,6 +20,10 @@
     "enableNonSslPort": {
       "type": "bool",
       "defaultValue": false
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "resources": [
@@ -28,6 +32,7 @@
       "name": "[parameters('redisCacheName')]",
       "type": "Microsoft.Cache/Redis",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "enableNonSslPort": "[parameters('enableNonSslPort')]",
         "sku": {

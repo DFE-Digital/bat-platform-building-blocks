@@ -79,6 +79,10 @@
       "metadata": {
         "description": "Enable logging of HTTP calls to the app"
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
@@ -92,6 +96,7 @@
       "kind": "app,linux,container",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "clientAffinityEnabled": false,
         "serverFarmId": "[variables('appServicePlanId')]",
@@ -113,6 +118,7 @@
       "type": "Microsoft.Web/sites/slots",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "clientAffinityEnabled": false,
         "serverFarmId": "[variables('appServicePlanId')]",
@@ -136,6 +142,7 @@
       "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "sslState": "SniEnabled",
         "thumbprint": "[parameters('certificateThumbprint')]"

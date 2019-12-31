@@ -71,6 +71,10 @@
           "virtualDirectories": null
         }
       ]
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
@@ -83,6 +87,7 @@
       "name": "[parameters('appServiceName')]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "serverFarmId": "[variables('appServicePlanId')]",
         "clientAffinityEnabled": false,
@@ -103,6 +108,7 @@
           "type": "slots",
           "apiVersion": "2016-08-01",
           "location": "[resourceGroup().location]",
+          "tags": "[parameters('resourceTags')]",
           "properties": {
             "serverFarmId": "[variables('appServicePlanId')]",
             "clientAffinityEnabled": false,
@@ -127,6 +133,7 @@
       "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "sslState": "SniEnabled",
         "thumbprint": "[parameters('certificateThumbprint')]"

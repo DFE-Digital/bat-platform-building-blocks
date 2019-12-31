@@ -14,6 +14,10 @@
     "serverFarmId": {
       "type": "string",
       "defaultValue": ""
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
@@ -35,6 +39,7 @@
       "type": "Microsoft.Web/certificates",
       "name": "[parameters('keyVaultCertificateName')]",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "apiVersion": "2016-03-01",
       "properties": "[if(variables('includeServerFarmId'), variables('certificateResourceProperties').withServerFarmId, variables('certificateResourceProperties').withoutServerFarmId)]"
     }
