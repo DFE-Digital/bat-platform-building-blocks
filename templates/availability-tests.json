@@ -12,7 +12,7 @@
       "defaultValue": [],
       "type": "array",
       "metadata": {
-        "description": "Array of test objects to configure URLs to perform availability tests for."
+        "description": "Array of availability test objects to configure URLs to perform availability tests for. Availability test objects must contain the following the variables 'nameSuffix', 'url' and 'guid'."
       }
     },
     "resourceTags": {
