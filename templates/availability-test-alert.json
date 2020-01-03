@@ -68,10 +68,17 @@
       "metadata": {
         "decsription": "Number of times the test can fail before an alert is sent."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
-    "scopes": "[createArray(parameters('appInsightsId'), parameters('webTestId'))]"
+    "scopes": "[createArray(parameters('appInsightsId'), parameters('webTestId'))]",
+    "metricAlertTags": {
+      "[concat('hidden-link:', resourceId('Microsoft.Insights/components', parameters('appInsightsName')))]": "Resource"
+    }
   },
   "resources": [
     {
@@ -79,9 +86,7 @@
       "type": "microsoft.insights/metricalerts",
       "name": "[parameters('alertName')]",
       "location": "global",
-      "tags": {
-        "[concat('hidden-link:', resourceId('Microsoft.Insights/components', parameters('appInsightsName')))]": "Resource"
-      },
+      "tags": "[union(variables('metricAlertTags'), parameters('resourceTags'))]",
       "properties": {
         "description": "[parameters('alertDescriptionText')]",
         "severity": "[parameters('alertSeverity')]",

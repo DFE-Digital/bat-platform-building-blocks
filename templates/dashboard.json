@@ -50,9 +50,17 @@
       "metadata": {
         "description": "Optional array of container instance names to be monitored."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
+    "dashboardTags": {
+      "hidden-title": "[toUpper(concat(parameters('serviceName'), ' Dashboard (', parameters('environment'), ')'))]",
+      "Environment": "[parameters('environment')]"
+    },
     "defaultCpuUsage": [
       {
         "resourceMetadata": {
@@ -134,12 +142,7 @@
       "name": "[concat(parameters('resourceGroupName'), '-dashboard')]",
       "type": "Microsoft.Portal/dashboards",
       "location": "[resourceGroup().location]",
-      "tags": {
-        "hidden-title": "[toUpper(concat(parameters('serviceName'), ' Dashboard (', parameters('environment'), ')'))]",
-        "Environment": "[parameters('environment')]",
-        "Parent Business": "TBC",
-        "Service Offering": "TBC"
-      },
+      "tags": "[union(variables('dashboardTags'), parameters('resourceTags'))]",
       "properties": {
         "lenses": {
           "0": {
