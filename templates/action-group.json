@@ -14,6 +14,10 @@
       "metadata": {
         "description": "Array of email recipient objects to send alerts to. Each email recipient objectsshould have the variables 'displayName' and 'emailAddress'."
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
@@ -27,7 +31,7 @@
       "name": "[variables('actionGroupName')]",
       "condition": "[greater(length(parameters('alertRecipientEmails')), 0)]",
       "location": "global",
-      "tags": {},
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "groupShortName": "[variables('actionGroupShortName')]",
         "enabled": true,
