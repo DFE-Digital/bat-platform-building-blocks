@@ -21,10 +21,49 @@
       "type": "bool",
       "defaultValue": false
     },
+    "minimumTlsVersion": {
+      "type": "string",
+      "defaultValue": "1.0",
+      "allowedValues": [
+        "1.0",
+        "1.1",
+        "1.2"
+       ]
+    },
+    "dataPersistence": {
+      "type": "string",
+      "defaultValue": "disabled",
+      "allowedValues": [
+        "disabled",
+        "rdb",
+        "aof"
+      ],
+      "metadata": {
+        "description": "Data persistence settings. Can only be used where the redisCacheSku is set to 'Premium'. Requires a storage account for this feature to be enabled."
+      }
+    },
+    "rdbBackupFrequencyMinutes": {
+      "type": "int",
+      "defaultValue": 60,
+      "metadata": {
+        "description": "Time between backups in minutes."
+      }
+    },
+    "storageConnectionString": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Connection string of the storage account to store the Redis persistence data in. Redis will create a new container for each node. Only required if 'dataPersistence' is set to 'aof'."
+      }
+    },
     "resourceTags": {
       "type": "object",
       "defaultValue": {}
     }
+  },
+  "variables": {
+    "persistence-aof-config": "[if(and(equals(parameters('redisCacheSKU'), 'Premium'), equals(parameters('dataPersistence'), 'aof')), json(concat('{\"aof-backup-enabled\": \"true\", \"aof-storage-connection-string-0\": \"', parameters('storageConnectionString'), '\", \"aof-storage-connection-string-1\": \"', parameters('storageConnectionString'), '\"}')), json('{}'))]",
+    "persistence-rdb-config": "[if(and(equals(parameters('redisCacheSKU'), 'Premium'), equals(parameters('dataPersistence'), 'rdb')), json(concat('{\"rdb-backup-enabled\": \"true\", \"rdb-backup-frequency\": \"', string(parameters('rdbBackupFrequencyMinutes')), '\", \"rdb-storage-connection-string\": \"', parameters('storageConnectionString'), '\"}')), json('{}'))]"
   },
   "resources": [
     {
@@ -35,11 +74,13 @@
       "tags": "[parameters('resourceTags')]",
       "properties": {
         "enableNonSslPort": "[parameters('enableNonSslPort')]",
+        "minimumTlsVersion": "[parameters('minimumTlsVersion')]",
         "sku": {
           "capacity": "[parameters('redisCacheCapacity')]",
           "family": "[parameters('redisCacheFamily')]",
           "name": "[parameters('redisCacheSKU')]"
-        }
+        },
+        "redisConfiguration": "[union(variables('persistence-aof-config'), variables('persistence-rdb-config'))]"
       }
     }
   ],
