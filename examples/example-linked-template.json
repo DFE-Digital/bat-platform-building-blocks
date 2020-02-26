@@ -43,6 +43,30 @@
       "metadata": {
         "description": "The email address of the alert email recipient."
       }
+    },
+    "resourceNamePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The CIP naming prefix for the resource, e.g. s106d01-apply."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the resource environment e.g. qa, staging, production."
+      }
+    },
+    "slackChannel": {
+      "type": "string",
+      "metadata": {
+        "description": "The Slack channel to post to."
+      }
+    },
+    "serviceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the service, e.g Apply."
+      }
     }
   },
   "variables": {
@@ -161,6 +185,32 @@
     },
     {
       "apiVersion": "2017-05-10",
+      "name": "logic-app-slack",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('templateBaseUrl'), 'logic-app-slack.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "resourceNamePrefix": {
+            "value": "[parameters('resourceNamePrefix')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "slackChannel": {
+            "value": "[parameters('alertSlackChannel')]"
+          },
+          "serviceName": {
+            "value": "[parameters('serviceName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
       "name": "action-group",
       "type": "Microsoft.Resources/deployments",
       "properties": {
@@ -175,11 +225,22 @@
           },
           "alertRecipientEmails": {
             "value": "[variables('alertRecipientEmails')]"
+          },
+          "logicAppReceivers": {
+            "value": [
+              {
+                "name": "Slack",
+                "resourceId": "[reference('logic-app-slack').outputs.logicAppResourceId.value]",
+                "callbackUrl": "[reference('logic-app-slack').outputs.WebHookURI.value]",
+                "useCommonAlertSchema": false
+              }
+            ]
           }
         }
       },
       "dependsOn": [
-        "app-insights"
+        "app-insights",
+        "logic-app-slack"
       ]
     },
     {

@@ -8,6 +8,7 @@ one or more application in a service.
 2. [Branching](#Branching)
 3. [Resource naming and parameter metadata description properties](#Resource-naming-and-parameter-metadata-description-properties)
 4. [Property name formatting](#Property-name-formatting)
+5. [Logic App for Slack](#logic-app-for-slack)
 
 ### Usage
 
@@ -129,3 +130,13 @@ The convention of property name formatting, as used in the examples above:
 2. Variables: camelCase
 3. Resource Deployments: lowercase-with-hyphens
 4. Outputs: PascalCase (matching the release pipeline variables)
+
+### Logic App for Slack
+
+When deploying the logic app for Slack, after the initial deployment you will need to complete following manual steps to authorise the API connection with Slack the first time only. Until these steps are complete you will not be able to receive alerts in slack.
+1. Login to the [Azure portal](https://portal.azure.com)
+2. Go to the 'API Connection' blade
+3. Select the Slack API connection that has been deployed
+4. Select 'Edit API connection' under 'General' in the menu
+5. Click the 'Authorize' button and click 'Allow' in the pop-up window that opens
+6. Once the Authorization is complete click the 'Save' button in the Edit API connection pane that should still be open in the portal.

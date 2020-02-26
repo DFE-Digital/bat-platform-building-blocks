@@ -15,6 +15,13 @@
         "description": "Array of email recipient objects to send alerts to. Each email recipient objectsshould have the variables 'displayName' and 'emailAddress'."
       }
     },
+    "logicAppReceivers": {
+      "defaultValue": [],
+      "type": "array",
+      "metadata": {
+        "description": "Array of logic app receiver objects."
+      }
+    },
     "resourceTags": {
       "type": "object",
       "defaultValue": {}
@@ -52,7 +59,7 @@
         "azureAppPushReceivers": [],
         "automationRunbookReceivers": [],
         "voiceReceivers": [],
-        "logicAppReceivers": [],
+        "logicAppReceivers": "[parameters('logicAppReceivers')]",
         "azureFunctionReceivers": []
       }
     }
