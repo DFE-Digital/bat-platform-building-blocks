@@ -36,11 +36,46 @@
     "resourceTags": {
       "type": "object",
       "defaultValue": {}
+    },
+    "enableDiagnostics": {
+      "type": "string",
+      "defaultValue": "none",
+      "allowedValues": [
+        "none",
+        "logs",
+        "metrics",
+        "all"
+      ],
+      "metadata": {
+        "description": "Configure diagnostic logging mode."
+      }
+    },
+    "enableLogRetention": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Enabled diagnotic logging retention feature if set to true."
+      }
+    },
+    "logRetentionDays": {
+      "type": "int",
+      "defaultValue": 31,
+      "metadata": {
+        "description": "Number of days to retain logs for if retention is enabled."
+      }
+    },
+    "storageAccountResourceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource Id of the storage account used for log retention. Value is only required if 'enableDiagnostics' is set."
+      }
     }
   },
   "variables": {
     "slackApiConnectionName": "[concat(parameters('resourceNamePrefix'), '-apic-slack')]",
-    "logicAppName": "[concat(parameters('resourceNamePrefix'), '-la-slack-alerts')]"
+    "logicAppName": "[concat(parameters('resourceNamePrefix'), '-la-slack-alerts')]",
+    "diagnosticSettingName": "[concat(variables('logicAppName'), '-logs')]"
   },
   "resources": [
     {
@@ -220,6 +255,42 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/connections', variables('slackApiConnectionName'))]"
+      ],
+      "resources": [
+        {
+          "apiVersion": "2017-05-01-preview",
+          "name": "[concat(variables('logicAppName'), '/Microsoft.Insights/', variables('diagnosticSettingName'))]",
+          "type": "Microsoft.Logic/workflows/providers/diagnosticSettings",
+          "condition": "[not(equals(parameters('enableDiagnostics'), 'none'))]",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "name": "[variables('diagnosticSettingName')]",
+            "storageAccountId": "[parameters('storageAccountResourceId')]",
+            "logs": [
+              {
+                "category": "WorkflowRuntime",
+                "enabled": "[if(or(equals(parameters('enableDiagnostics'), 'all'), equals(parameters('enableDiagnostics'), 'logs')), bool('true'), boolo('false'))]",
+                "retentionPolicy": {
+                  "enabled": "[parameters('enableLogRetention')]",
+                  "days": "[if(parameters('enableLogRetention'), parameters('logRetentionDays'), 0)]"
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "category": "AllMetrics",
+                "enabled": "[if(or(equals(parameters('enableDiagnostics'), 'all'), equals(parameters('enableDiagnostics'), 'metrics')), bool('true'), bool('false'))]",
+                "retentionPolicy": {
+                  "enabled": "[parameters('enableLogRetention')]",
+                  "days": "[if(parameters('enableLogRetention'), parameters('logRetentionDays'), 0)]"
+                }
+              }
+            ]
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Logic/workflows', variables('logicAppName'))]"
+          ]
+        }
       ]
     }
   ],
