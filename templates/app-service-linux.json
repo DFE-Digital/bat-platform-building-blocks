@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "appServiceName": {
@@ -52,6 +52,16 @@
         "description": "This can be passed into the template via the reference function: [reference(resourceId(parameters('certificateResourceGroup'), 'Microsoft.Web/certificates', parameters('certificateName')), '2016-03-01').Thumbprint]"
       }
     },
+    "customDomains":{
+      "type": "array",
+      "defaultValue": [{
+        "domainName": "[parameters('customHostName')]",
+        "certificateThumbprint": "[parameters('certificateThumbprint')]"
+      }],
+      "metadata": {
+        "description": "custom domain information [{domainName: domain.com, certificateThumbprint: thumbprint}]"
+      }
+    },
     "deploymentUsingSlots": {
       "type": "bool",
       "defaultValue": true,
@@ -87,7 +97,7 @@
   },
   "variables": {
     "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
-    "useCustomHostname": "[greater(length(parameters('customHostname')), 0)]"
+    "useCustomDomains": "[greater(length(parameters('customDomains')), 0)]"
   },
   "resources": [
     {
@@ -138,18 +148,24 @@
     },
     {
       "type": "Microsoft.Web/sites/hostnameBindings",
-      "condition": "[variables('useCustomHostname')]",
-      "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
+      "condition": "[variables('useCustomDomains')]",
+      "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomDomains'), parameters('customDomains')[copyIndex('customDomainsIndex')].domainName, ''))]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
       "properties": {
         "sslState": "SniEnabled",
-        "thumbprint": "[parameters('certificateThumbprint')]"
+        "thumbprint": "[parameters('customDomains')[copyIndex('customDomainsIndex')].certificateThumbprint]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
-      ]
+      ],
+      "copy":{
+        "name": "customDomainsIndex",
+        "mode": "serial",
+        "batchSize": 1,
+        "count": "[length(parameters('customDomains'))]"
+      }
     }
   ],
   "outputs": {
