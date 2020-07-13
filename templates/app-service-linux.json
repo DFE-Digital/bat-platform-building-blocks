@@ -97,7 +97,7 @@
   },
   "variables": {
     "appServicePlanId": "[resourceId(parameters('appServicePlanResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
-    "useCustomDomains": "[greater(length(parameters('customDomains')), 0)]"
+    "useCustomDomains": "[and(greater(length(parameters('customDomains')), 0), greater(length(parameters('customDomains')[0].domainName), 0))]"
   },
   "resources": [
     {
