@@ -149,7 +149,7 @@
     {
       "type": "Microsoft.Web/sites/hostnameBindings",
       "condition": "[variables('useCustomDomains')]",
-      "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomDomains'), parameters('customDomains')[copyIndex('customDomainsIndex')].domainName, ''))]",
+      "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomDomains'), parameters('customDomains')[copyIndex('customDomainsIndex')].domainName, 'placeholder'))]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
