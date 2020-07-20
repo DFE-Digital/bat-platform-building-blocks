@@ -22,6 +22,10 @@
             "defaultValue": "https://api.logit.io/v2",
             "type": "string"
         },
+        "postgresServerName": {
+            "defaultValue": "",
+            "type": "string"
+        },
         "resourceTags":{
             "defaultValue": {},
             "type": "object"
@@ -53,6 +57,54 @@
             }
         },
         {
+            "type": "Microsoft.DBforPostgreSQL/servers/providers/diagnosticSettings",
+            "apiVersion": "2017-05-01-preview",
+            "condition": "[greater(length(parameters('postgresServerName')), 0)]",
+            "name": "[concat(parameters('postgresServerName'),'/microsoft.insights/send-logs-to-event-hubs')]",
+            "dependsOn": ["event-hubs"],
+            "properties": {
+                "eventHubAuthorizationRuleId": "[reference('event-hubs').outputs.eventhubsNamespaceAuthorizationRuleId.value]",
+                "eventHubName": "[parameters('eventhub_name')]",
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "enabled": false,
+                            "days": 0
+                        }
+                    }
+                ],
+                "logs": [
+                    {
+                        "category": "PostgreSQLLogs",
+                        "enabled": true,
+                        "retentionPolicy": {
+                            "enabled": false,
+                            "days": 0
+                        }
+                    },
+                    {
+                        "category": "QueryStoreRuntimeStatistics",
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "enabled": false,
+                            "days": 0
+                        }
+                    },
+                    {
+                        "category": "QueryStoreWaitStatistics",
+                        "enabled": false,
+                        "retentionPolicy": {
+                            "enabled": false,
+                            "days": 0
+                        }
+                    }
+                ],
+                "logAnalyticsDestinationType": null
+            }
+        },
+        {
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
             "name": "[parameters('eventhub_connection_name')]",
@@ -61,7 +113,7 @@
             "properties": {
                 "displayName": "[parameters('eventhub_connection_name')]",
                 "parameterValues": {
-                    "connectionString": "[reference('event-hubs').outputs.connectionStrings.value[0]]"
+                    "connectionString": "[reference('event-hubs').outputs.eventHubConnectionStrings.value[0]]"
                 },
                 "customParameterValues": {},
                 "api": {
@@ -70,6 +122,7 @@
             },
             "dependsOn": ["event-hubs"]
         },
+        
         {
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
