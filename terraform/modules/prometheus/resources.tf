@@ -14,3 +14,4 @@ resource cloudfoundry_app prometheus {
     route = cloudfoundry_route.prometheus.id
   }
 }
+

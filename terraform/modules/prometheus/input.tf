@@ -2,7 +2,19 @@ variable space_id {}
 variable name {}
 variable paas_prometheus_exporter_endpoint {}
 variable alertmanager_endpoint {}
+
+variable additional_variable_map{
+  type = map
+  default = {
+     do_nothing = "Nothing"
+  } 
+}
+
 variable alert_rules {
+  default = ""
+}
+
+variable config_file {
   default = ""
 }
 
@@ -13,3 +25,5 @@ locals {
     name                              = var.name
   }
 }
+
+
