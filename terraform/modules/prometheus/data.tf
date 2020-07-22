@@ -1,3 +1,3 @@
 data "cloudfoundry_domain" "cloudapps" {
-  name = "london.cloudapps.digital"
+ name = "london.cloudapps.digital"
 }

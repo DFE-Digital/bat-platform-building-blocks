@@ -4,6 +4,7 @@ resource cloudfoundry_route grafana {
   hostname = "grafana-${var.name}"
 }
 
+
 resource cloudfoundry_app grafana {
   name             = "grafana-${var.name}"
   space            = var.space_id

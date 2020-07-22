@@ -2,9 +2,28 @@ variable space_id {}
 variable name {}
 variable prometheus_endpoint {}
 variable admin_password {}
-variable json_dashboards {
-  type    = list
-  default = []
+
+variable additional_variable_map{
+  type = map
+  default = {
+     do_nothing = "Nothing"
+  }
+}
+
+variable configuration_file {
+    default = ""
+}
+
+variable dashboard_directory {
+    default = ""
+}
+
+variable datasource_directory {
+    default = ""
+}
+
+variable plugins_file {
+    default = ""
 }
 
 locals {
