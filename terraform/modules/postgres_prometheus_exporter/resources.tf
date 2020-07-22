@@ -1,6 +1,6 @@
 resource "cloudfoundry_app" "postgres-exporter" {
   name             = "postgres-exporter-${var.name}"
-  space            =  var.install_space_id
+  space            =  var.monitor_space_id
   docker_image     =  "wrouesnel/postgres_exporter"
   ports            = [9187]
   routes {
@@ -23,7 +23,7 @@ output endpoint {
 
 resource cloudfoundry_route postgres-exporter {
   domain   = data.cloudfoundry_domain.cloudapps.id
-  space    = var.install_space_id
+  space    = var.monitor_space_id
   hostname = "postgres-exporter-${var.name}"
 }
 

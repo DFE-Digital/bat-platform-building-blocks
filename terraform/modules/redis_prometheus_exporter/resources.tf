@@ -1,7 +1,7 @@
 
 resource "cloudfoundry_app" "redis-exporter" {
   name             = "redis-exporter-${var.name}"
-  space            =  var.install_space_id
+  space            =  var.monitor_space_id
   docker_image     =  "oliver006/redis_exporter:latest"
   ports            = [9187]
 
@@ -21,7 +21,7 @@ output redis_data {
 }
 
 resource cloudfoundry_route redis_exporter {
-  space    = var.install_space_id
+  space    = var.monitor_space_id
   domain   = data.cloudfoundry_domain.cloudapps.id
   hostname = "redis-exporter-${var.name}"
 }
