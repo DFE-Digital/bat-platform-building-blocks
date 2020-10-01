@@ -3,11 +3,11 @@ variable name {}
 variable paas_prometheus_exporter_endpoint {}
 variable alertmanager_endpoint {}
 
-variable additional_variable_map{
+variable additional_variable_map {
   type = map
   default = {
-     do_nothing = "Nothing"
-  } 
+    do_nothing = "Nothing"
+  }
 }
 
 variable alert_rules {
