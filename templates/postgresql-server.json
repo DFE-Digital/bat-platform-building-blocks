@@ -8,16 +8,20 @@
         "description": "Name of the PostgreSQL server"
       }
     },
-    "postgresSku": {
-      "type": "object",
-      "defaultValue": {
-        "name": "GP_Gen5_2",
-        "tier": "GeneralPurpose",
-        "size": 5120,
-        "family": "Gen5",
-        "capacity": 2
-      }
+    "dbServerCpuCores" : {
+      "type": "int",
+      "defaultValue": 2
     },
+     "postgresSku": {
+       "type": "object",
+       "defaultValue": {
+       "name": "[concat('GP_Gen5_', parameters('dbServerCpuCores'))]",
+       "tier": "GeneralPurpose",
+       "size": 5120,
+       "family": "Gen5",
+       "capacity": "[parameters('dbServerCpuCores')]"
+    }
+  },
     "postgresAdminLogin": {
       "type": "string"
     },
