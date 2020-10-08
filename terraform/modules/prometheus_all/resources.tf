@@ -39,5 +39,4 @@ module grafana {
   space_id            = var.space_id
   prometheus_endpoint = module.prometheus.endpoint
   admin_password      = var.grafana_admin_password
-  json_dashboards     = var.grafana_json_dashboards
 }
