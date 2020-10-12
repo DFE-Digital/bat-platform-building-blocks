@@ -1,7 +1,14 @@
-variable space_id {}
-variable name {}
+variable monitoring_space_id {}
+
+variable monitoring_org_name {}
+
 variable paas_prometheus_exporter_endpoint {}
-variable alertmanager_endpoint {}
+
+variable include_alerting { default = false }
+
+variable alertmanager_endpoint { default = "" }
+
+variable influxdb_service_instance_id {}
 
 variable additional_variable_map {
   type = map
@@ -22,7 +29,8 @@ locals {
   template_variable_map = {
     paas_prometheus_exporter_endpoint = var.paas_prometheus_exporter_endpoint
     alertmanager_endpoint             = var.alertmanager_endpoint
-    name                              = var.name
+    paas_prometheus_exporter_name     = "paas-prometheus-exporter-${var.monitoring_org_name}"
+    include_alerting                  = var.include_alerting
   }
 }
 
