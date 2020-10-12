@@ -1,34 +1,41 @@
-variable space_id {}
-variable name {}
-variable prometheus_endpoint {}
-variable admin_password {}
+variable monitoring_org_name {}
 
-variable additional_variable_map{
+variable monitoring_space_id {}
+
+variable graphana_admin_password {}
+
+variable prometheus_endpoint {}
+
+variable configuration_file { default = "" }
+
+variable plugins_file { default = "" }
+
+variable dashboard_directory { default = "" }
+
+variable datasource_directory { default = "" }
+
+locals {
+  tmp_data   = var.datasource_directory == "" ? "${path.module}/datasources/" : var.datasource_directory
+  tmp_dash   = var.dashboard_directory == "" ? "${path.module}/dashboards/" : var.dashboard_directory
+  tmp_plug   = var.plugins_file == "" ? "${path.module}/config/plugins.txt" : var.plugins_file
+  tmp_config = var.configuration_file == "" ? "${path.module}/config/grafana.ini" : var.configuration_file
+
+  dashboards  = fileset("${local.tmp_dash}", "*.json")
+  datasources = fileset("${local.tmp_data}", "*.yml.tmpl")
+  plugins     = fileset("${local.tmp_plug}", "*.zip")
+
+}
+
+variable additional_variable_map {
   type = map
   default = {
-     do_nothing = "Nothing"
+    do_nothing = "Nothing"
   }
-}
-
-variable configuration_file {
-    default = ""
-}
-
-variable dashboard_directory {
-    default = ""
-}
-
-variable datasource_directory {
-    default = ""
-}
-
-variable plugins_file {
-    default = ""
 }
 
 locals {
   template_variable_map = {
-    prometheus_endpoint = var.prometheus_endpoint
-    name                = var.name
+    prometheus_endpoint        = var.prometheus_endpoint
+    prometheus_datasource_name = "prometheus-${var.monitoring_org_name}"
   }
 }
