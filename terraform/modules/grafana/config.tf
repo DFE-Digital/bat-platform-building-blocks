@@ -8,6 +8,11 @@ data archive_file config {
   }
 
   source {
+    content  = templatefile("${local.tmp_runtime}", {  runtime_version = var.runtime_version } )
+    filename = "runtime.txt"
+  }
+
+  source {
     content  = templatefile("${local.tmp_config}", var.additional_variable_map)
     filename = "grafana.ini"
   }
