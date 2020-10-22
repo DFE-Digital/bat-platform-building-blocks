@@ -42,3 +42,10 @@ module "grafana" {
      additional_variable_map = local.map
 }
 ```
+
+### Grafana Version
+This file allows you to specify the version of Grafana to the build pack, by default it is 6.5.1 but this can be overridden
+```
+# Define your grafana version here
+6.5.1
+```
