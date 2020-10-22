@@ -26,8 +26,8 @@ variable plugins_file {
     default = ""
 }
 
-variable runtime_file {
-    default = ""
+variable runtime_version {
+    default = "6.5.1"
 }
 
 locals {
