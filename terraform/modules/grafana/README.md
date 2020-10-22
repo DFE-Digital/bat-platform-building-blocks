@@ -40,5 +40,6 @@ module "grafana" {
      datasource_directory    = local.datasource_directory
      prometheus_endpoint     = "https://prometheus.london.cloudapps.digital"
      additional_variable_map = local.map
+     runtime_version         = x.x.x
 }
 ```
