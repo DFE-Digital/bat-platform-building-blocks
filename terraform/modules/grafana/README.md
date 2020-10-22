@@ -15,6 +15,7 @@ By default the template now supports integration with google logins. The ID must
    datasource_directory    OPTIONAL
    configuration_file      OPTIONAL
    plugins_list            OPTIONAL
+   runtime_version         OPTIONAL
 ```
 
 ### Plugins List
@@ -43,9 +44,3 @@ module "grafana" {
 }
 ```
 
-### Grafana Version
-This file allows you to specify the version of Grafana to the build pack, by default it is 6.5.1 but this can be overridden
-```
-# Define your grafana version here
-6.5.1
-```
