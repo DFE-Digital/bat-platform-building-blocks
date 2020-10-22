@@ -2,6 +2,7 @@ locals {
     tmp_data    = var.datasource_directory == "" ? "${path.module}/datasources/"       : var.datasource_directory
     tmp_dash    = var.dashboard_directory  == "" ? "${path.module}/dashboards/"        : var.dashboard_directory
     tmp_plug    = var.plugins_file         == "" ? "${path.module}/config/plugins.txt" : var.plugins_file
+    tmp_runtime = var.runtime_file         == "" ? "${path.module}/config/runtime.txt" : var.runtime_file
     tmp_config  = var.configuration_file   == "" ? "${path.module}/config/grafana.ini" : var.configuration_file
 
     dashboards = fileset("${local.tmp_dash}", "*.json")
@@ -17,6 +18,11 @@ data archive_file config {
   source {
     content  = file( "${local.tmp_plug}" )
     filename = "plugins.txt"
+  }
+
+  source {
+    content  = file( "${local.tmp_runtime}" )
+    filename = "runtime.txt"
   }
 
   source {

@@ -26,6 +26,10 @@ variable plugins_file {
     default = ""
 }
 
+variable runtime_file {
+    default = ""
+}
+
 locals {
   template_variable_map = {
     prometheus_endpoint = var.prometheus_endpoint
