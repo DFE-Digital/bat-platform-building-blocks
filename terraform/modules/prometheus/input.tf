@@ -8,6 +8,10 @@ variable include_alerting { default = false }
 
 variable alertmanager_endpoint { default = "" }
 
+variable memory { default = 1024 }
+
+variable disk_quota { default = 1024 }
+
 variable influxdb_service_instance_id {}
 
 variable additional_variable_map {
