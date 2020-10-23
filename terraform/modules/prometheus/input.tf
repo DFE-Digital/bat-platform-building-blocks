@@ -14,6 +14,18 @@ variable alert_rules {
   default = ""
 }
 
+variable memory {
+  default = 1024
+}
+
+variable instances {
+  default = 1
+}
+
+variable disk_quota {
+  default = 1024
+}
+
 variable config_file {
   default = ""
 }

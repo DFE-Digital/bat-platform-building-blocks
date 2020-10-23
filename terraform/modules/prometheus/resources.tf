@@ -8,7 +8,9 @@ resource cloudfoundry_app prometheus {
   name             = "prometheus-${var.name}"
   space            = var.space_id
   path             = data.archive_file.config.output_path
-  memory           = "5120"
+  memory           = var.memory
+  instances        = var.instances
+  disk_quota       = var.disk_quota
   source_code_hash = data.archive_file.config.output_base64sha256
   buildpack        = "https://github.com/alphagov/prometheus-buildpack.git"
   routes {
