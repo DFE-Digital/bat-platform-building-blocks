@@ -1,21 +1,21 @@
 resource "cloudfoundry_app" "postgres-exporter" {
-  name             = "postgres-exporter-${var.name}"
-  space            =  var.monitor_space_id
-  docker_image     =  "wrouesnel/postgres_exporter"
-  ports            = [9187]
+  name         = "postgres-exporter-${var.name}"
+  space        = var.monitor_space_id
+  docker_image = "wrouesnel/postgres_exporter"
+  ports        = [9187]
   routes {
     route = cloudfoundry_route.postgres-exporter.id
   }
-  service_binding  {
-        service_instance = data.cloudfoundry_service_instance.postgres.id
+  service_binding {
+    service_instance = data.cloudfoundry_service_instance.postgres.id
   }
-  environment = { 
-     PG_EXPORTER_WEB_LISTEN_ADDRESS = "0.0.0.0:9187"
+  environment = {
+    PG_EXPORTER_WEB_LISTEN_ADDRESS = "0.0.0.0:9187"
   }
 }
 
 output postgres_data {
-   value = cloudfoundry_app.postgres-exporter 
+  value = cloudfoundry_app.postgres-exporter
 }
 output endpoint {
   value = cloudfoundry_route.postgres-exporter.endpoint

@@ -7,7 +7,7 @@ scrape_configs:
   static_configs:
     - targets: [${paas_prometheus_exporter_endpoint}]
 
-%{ if include_alerting == true }
+%{ if include_alerting }
 alerting:
   alertmanagers:
   - scheme: https

@@ -1,5 +1,5 @@
 data cloudfoundry_org org {
-  name = "dfe-teacher-services"
+  name = var.monitoring_org_name
 }
 
 data cloudfoundry_space monitoring {

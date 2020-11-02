@@ -1,11 +1,11 @@
 resource cloudfoundry_route prometheus {
   domain   = data.cloudfoundry_domain.cloudapps.id
   space    = var.monitoring_space_id
-  hostname = "prometheus-${var.monitoring_org_name}"
+  hostname = "prometheus-${var.monitoring_instance_name}"
 }
 
 resource cloudfoundry_app prometheus {
-  name             = "prometheus-${var.monitoring_org_name}"
+  name             = "prometheus-${var.monitoring_instance_name}"
   space            = var.monitoring_space_id
   path             = data.archive_file.config.output_path
   memory           = var.memory

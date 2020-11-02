@@ -1,6 +1,6 @@
 variable monitoring_space_id {}
 
-variable monitoring_org_name {}
+variable monitoring_instance_name {}
 
 variable paas_prometheus_exporter_endpoint {}
 
@@ -31,7 +31,7 @@ locals {
   template_variable_map = {
     paas_prometheus_exporter_endpoint = var.paas_prometheus_exporter_endpoint
     alertmanager_endpoint             = var.alertmanager_endpoint
-    paas_prometheus_exporter_name     = "paas-prometheus-exporter-${var.monitoring_org_name}"
+    paas_prometheus_exporter_name     = "paas-prometheus-exporter-${var.monitoring_instance_name}"
     include_alerting                  = var.alert_rules == "" ? false : true
   }
 }
