@@ -17,8 +17,6 @@ variable enabled_modules {
   type = list
   default = [
     "paas_prometheus_exporter",
-    "postgres_prometheus_exporter",
-    "redis_prometheus_exporter",
     "prometheus",
     "grafana",
     "alertmanager",
