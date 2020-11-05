@@ -11,7 +11,7 @@ variable alert_rules { default = "" }
 variable grafana_google_client_id { default = "" }
 variable grafana_google_client_secret { default = "" }
 variable grafana_admin_password {}
-variable grafana_json_dashboards {}
+variable grafana_json_dashboards { default = [] }
 
 variable enabled_modules {
   type = list
