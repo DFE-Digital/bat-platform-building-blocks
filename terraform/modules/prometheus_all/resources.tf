@@ -48,4 +48,5 @@ module grafana {
   google_client_secret     = var.grafana_google_client_secret
   admin_password           = var.grafana_admin_password
   json_dashboards          = var.grafana_json_dashboards
+  extra_datasources        = var.grafana_extra_datasources
 }
