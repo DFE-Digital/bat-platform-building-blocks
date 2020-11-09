@@ -1,14 +1,16 @@
-variable space_id {}
-variable name {}
-variable paas_prometheus_exporter_endpoint {}
-variable alertmanager_endpoint {}
+variable monitoring_space_id {}
 
-variable additional_variable_map {
-  type = map
-  default = {
-    do_nothing = "Nothing"
-  }
-}
+variable monitoring_instance_name {}
+
+variable paas_prometheus_exporter_endpoint {}
+
+variable alertmanager_endpoint { default = "" }
+
+variable memory { default = 1024 }
+
+variable disk_quota { default = 1024 }
+
+variable influxdb_service_instance_id {}
 
 variable alert_rules {
   default = ""
@@ -22,8 +24,8 @@ locals {
   template_variable_map = {
     paas_prometheus_exporter_endpoint = var.paas_prometheus_exporter_endpoint
     alertmanager_endpoint             = var.alertmanager_endpoint
-    name                              = var.name
+    paas_prometheus_exporter_name     = "paas-prometheus-exporter-${var.monitoring_instance_name}"
+    include_alerting                  = var.alert_rules == "" ? false : true
   }
+  config_file = var.config_file != "" ? var.config_file : templatefile("${path.module}/templates/prometheus.yml.tmpl", local.template_variable_map)
 }
-
-
