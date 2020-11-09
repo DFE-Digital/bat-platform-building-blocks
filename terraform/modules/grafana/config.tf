@@ -1,26 +1,19 @@
-locals {
-    tmp_data    = var.datasource_directory == "" ? "${path.module}/datasources/"       : var.datasource_directory
-    tmp_dash    = var.dashboard_directory  == "" ? "${path.module}/dashboards/"        : var.dashboard_directory
-    tmp_plug    = var.plugins_file         == "" ? "${path.module}/config/plugins.txt" : var.plugins_file
-    tmp_config  = var.configuration_file   == "" ? "${path.module}/config/grafana.ini" : var.configuration_file
-
-    dashboards = fileset("${local.tmp_dash}", "*.json")
-    datasources = fileset("${local.tmp_data}", "*.yml.tmpl")
-    plugins     = fileset("${local.tmp_plug}", "*.zip")
-
-}
-
 data archive_file config {
   type        = "zip"
   output_path = "${path.module}/files/grafana.zip"
 
   source {
-    content  = file( "${local.tmp_plug}" )
+    content  = file("${path.module}/config/plugins.txt")
     filename = "plugins.txt"
   }
 
   source {
-    content  = templatefile( "${local.tmp_config}" , var.additional_variable_map )
+    content  = templatefile("${path.module}/config/runtime.txt", { runtime_version = var.runtime_version })
+    filename = "runtime.txt"
+  }
+
+  source {
+    content  = templatefile("${path.module}/config/grafana.ini", local.grafana_ini_variables)
     filename = "grafana.ini"
   }
 
@@ -29,20 +22,25 @@ data archive_file config {
     filename = "dashboards/dashboard_provider.yml"
   }
 
+  source {
+    content  = templatefile("${path.module}/datasources/prometheus.yml.tmpl", local.prometheus_datasource_variables)
+    filename = "datasources/prometheus.yml"
+  }
+
   dynamic "source" {
-    for_each = local.datasources
+    for_each = var.extra_datasources
     content {
-      content  = templatefile("${local.tmp_data}/${source.key}" , merge( local.template_variable_map , var.additional_variable_map ))
-      filename = replace( "datasources/${source.key}" , ".tmpl" , "" )
+      content  = source.value
+      filename = "datasources/${source.key}.yml"
     }
   }
+
   dynamic "source" {
-    for_each = local.dashboards
+    for_each = var.json_dashboards
     content {
-      content  = file("${local.tmp_dash}/${source.key}")
-      filename = "dashboards/${source.key}"
+      content  = source.value
+      filename = "dashboards/${source.key}.json"
     }
   }
 
 }
-
