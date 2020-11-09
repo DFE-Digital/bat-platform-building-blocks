@@ -1,13 +1,9 @@
-locals {
-  config_file = var.config_file == "" ? "${path.module}/templates/prometheus.yml.tmpl" : var.config_file
-}
-
 data archive_file config {
   type        = "zip"
   output_path = "${path.module}/files/prometheus.zip"
 
   source {
-    content  = templatefile(local.config_file, merge(local.template_variable_map, var.additional_variable_map))
+    content  = local.config_file
     filename = "prometheus.yml"
   }
 
