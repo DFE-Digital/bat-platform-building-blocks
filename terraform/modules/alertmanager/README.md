@@ -28,5 +28,19 @@ module alertmanager {
 }
 ```
 
+### Prometheus alerts
+
+```
+      - alert: TooManyRequests
+        expr: 'sum(increase(tta_requests_total{path!~"csp_reports",status=~"429"}[1m])) > 0'
+        labels:
+          severity: high
+        annotations:
+          summary: Alert when any user hits a rate limit (excluding the /csp_reports endpoint).
+          runbook: https://dfedigital.atlassian.net/wiki/spaces/GGIT/pages/2152497153/Rate+Limit
+```
+
+The severity should be one of high, medium or low
+
 ### Templates
 A default set of slack templates have been provided
