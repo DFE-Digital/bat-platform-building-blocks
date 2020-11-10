@@ -8,11 +8,12 @@ resource cloudfoundry_app alertmanager {
   name         = "alertmanager-${var.monitoring_instance_name}"
   space        = var.monitoring_space_id
   docker_image = "prom/alertmanager"
-  command      = "echo \"$${CONFIG}\" > alertmanager.yml ; alertmanager --web.listen-address=:$${PORT} --config.file=alertmanager.yml"
+  command      = "echo \"$${SLACK_TEMPLATE}\" > slack.tmpl; echo \"$${CONFIG}\" > alertmanager.yml ; alertmanager --web.listen-address=:$${PORT} --config.file=alertmanager.yml"
   routes {
     route = cloudfoundry_route.alertmanager.id
   }
   environment = {
-    CONFIG = local.config
+    CONFIG         = local.config
+    SLACK_TEMPLATE = local.slack_template
   }
 }

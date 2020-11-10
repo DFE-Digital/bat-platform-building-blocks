@@ -8,6 +8,8 @@ It is deployed using the official docker image.
    monitoring_space_id         MANDATORY
    monitoring_instance_name    MANDATORY
    config                      OPTIONAL
+   slack_url                   OPTIONAL
+   slack_channel               OPTIONAL
 ```
 
 - **monitoring_instance_name:** A unique name given to the application
@@ -21,5 +23,10 @@ module alertmanager {
    monitoring_space_id      = data.cloudfoundry_space.space.id
    monitoring_instance_name = "test-alertmanager"
    config                   = file("${path.module}/files/alertmanager.yml")
+   slack_url                = https://hooks.slack.com/services/XXXXXXXXX/YYYYYYYYYYY/xxxxxxxxxxxxxxxxxxxxxxxx
+   slack_channel            = mychannel
 }
 ```
+
+### Templates
+A default set of slack templates have been provided
