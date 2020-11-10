@@ -26,6 +26,8 @@ module prometheus {
   influxdb_service_instance_id      = module.influxdb[0].service_instance_id
   alertmanager_endpoint             = contains(var.enabled_modules, "alertmanager") ? module.alertmanager[0].endpoint : ""
   alert_rules                       = var.alert_rules
+  memory                            = var.prometheus_memory
+  disk_quota                        = var.prometheus_disk_quota
 }
 
 module alertmanager {
