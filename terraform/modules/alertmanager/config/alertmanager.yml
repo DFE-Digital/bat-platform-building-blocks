@@ -5,7 +5,7 @@ global:
 route:
  receiver: 'slack-notifications'
  group_interval: 1m
- repeat_interval: 1m
+ repeat_interval: 1h
 
 templates:
   - './slack.tmpl'
