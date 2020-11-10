@@ -5,15 +5,25 @@ Example:
 
 ```hcl
 module prometheus_all {
-  source = "git::https://github.com/DFE-Digital/bat-platform-building-blocks.git//terraform/modules/prometheus_all?ref=dev"
+  source = "git::https://github.com/DFE-Digital/bat-platform-building-blocks.git//terraform/modules/prometheus_all"
 
-  name = var.name
-  space_id = data.cloudfoundry_space.monitoring.id
-  paas_exporter_username = var.paas_exporter_username
-  paas_exporter_password = var.paas_exporter_password
-  alertmanager_config = file("${path.module}/files/alertmanager.yml")
-  grafana_admin_password = var.grafana_admin_password
+  monitoring_instance_name = "teaching-vacancies"
+  monitoring_org_name      = "dfe-teacher-services"
+  monitoring_space_name    = "teaching-vacancies-monitoring"
+  paas_exporter_username   = var.paas_exporter_username
+  paas_exporter_password   = var.paas_exporter_password
+  alertmanager_config      = file("${path.module}/files/alertmanager.yml")
+  grafana_admin_password   = var.grafana_admin_password
+  grafana_json_dashboards  = [
+    file("${path.module}/dashboards/frontend.json)",
+    file("${path.module}/dashboards/backend.json)"
+  ]
 }
+```
+
+The git reference can be changed. For example for the `dev` branch:
+```
+source = "git::https://github.com/DFE-Digital/bat-platform-building-blocks.git//terraform/modules/prometheus_all?ref=dev"
 ```
 
 * paas_prometheus_exporter: Deploys the paas_prometheus_exporter app to read paas metrics. It must be configured with a user which has at least SpaceAuditor role.

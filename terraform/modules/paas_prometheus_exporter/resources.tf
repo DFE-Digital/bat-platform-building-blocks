@@ -1,20 +1,16 @@
 resource cloudfoundry_route paas_prometheus_exporter {
   domain   = data.cloudfoundry_domain.cloudapps.id
-  space    = var.space_id
-  hostname = "paas-prometheus-exporter-${var.name}"
+  space    = var.monitoring_space_id
+  hostname = "paas-prometheus-exporter-${var.monitoring_instance_name}"
 }
 
 resource cloudfoundry_app paas_prometheus_exporter {
-  name         = "paas-prometheus-exporter-${var.name}"
-  space        = var.space_id
-  docker_image = "governmentpaas/paas-prometheus-exporter:ae92e64f45264d450626cb33802b3649b68562d4"
+  name         = "paas-prometheus-exporter-${var.monitoring_instance_name}"
+  space        = var.monitoring_space_id
+  docker_image = "governmentpaas/paas-prometheus-exporter:${local.docker_image_tag}"
   command      = "paas-prometheus-exporter"
   routes {
     route = cloudfoundry_route.paas_prometheus_exporter.id
   }
-  environment = {
-    API_ENDPOINT = local.api_endpoint
-    USERNAME     = var.username
-    PASSWORD     = var.password
-  }
+  environment = local.environment_variable_map
 }
