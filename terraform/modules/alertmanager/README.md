@@ -44,3 +44,7 @@ The severity should be one of high, medium or low
 
 ### Templates
 A default set of slack templates have been provided
+
+### Acknowledgements to
+https://gist.github.com/milesbxf/e2744fc90e9c41b47aa47925f8ff6512
+
