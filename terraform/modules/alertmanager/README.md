@@ -8,6 +8,8 @@ It is deployed using the official docker image.
    monitoring_space_id         MANDATORY
    monitoring_instance_name    MANDATORY
    config                      OPTIONAL
+   slack_url                   OPTIONAL
+   slack_channel               OPTIONAL
 ```
 
 - **monitoring_instance_name:** A unique name given to the application
@@ -21,5 +23,28 @@ module alertmanager {
    monitoring_space_id      = data.cloudfoundry_space.space.id
    monitoring_instance_name = "test-alertmanager"
    config                   = file("${path.module}/files/alertmanager.yml")
+   slack_url                = https://hooks.slack.com/services/XXXXXXXXX/YYYYYYYYYYY/xxxxxxxxxxxxxxxxxxxxxxxx
+   slack_channel            = mychannel
 }
 ```
+
+### Prometheus alerts
+
+```
+      - alert: TooManyRequests
+        expr: 'sum(increase(tta_requests_total{path!~"csp_reports",status=~"429"}[1m])) > 0'
+        labels:
+          severity: high
+        annotations:
+          summary: Alert when any user hits a rate limit (excluding the /csp_reports endpoint).
+          runbook: https://dfedigital.atlassian.net/wiki/spaces/GGIT/pages/2152497153/Rate+Limit
+```
+
+The severity should be one of high, medium or low
+
+### Templates
+A default set of slack templates have been provided
+
+### Acknowledgements to
+https://gist.github.com/milesbxf/e2744fc90e9c41b47aa47925f8ff6512
+
