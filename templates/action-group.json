@@ -1,0 +1,73 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appInsightsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the application insights resource"
+      }
+    },
+    "alertRecipientEmails": {
+      "defaultValue": [],
+      "type": "array",
+      "metadata": {
+        "description": "Array of email recipient objects to send alerts to. Each email recipient objectsshould have the variables 'displayName' and 'emailAddress'."
+      }
+    },
+    "logicAppReceivers": {
+      "defaultValue": [],
+      "type": "array",
+      "metadata": {
+        "description": "Array of logic app receiver objects."
+      }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
+    }
+  },
+  "variables": {
+    "actionGroupName": "[concat(parameters('appInsightsName'), '-ag-operations')]",
+    "actionGroupShortName": "[concat(split(parameters('appInsightsName'), '-')[0], '-ops')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-03-01",
+      "type": "microsoft.insights/actionGroups",
+      "name": "[variables('actionGroupName')]",
+      "condition": "[greater(length(parameters('alertRecipientEmails')), 0)]",
+      "location": "global",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "groupShortName": "[variables('actionGroupShortName')]",
+        "enabled": true,
+        "copy": [
+          {
+            "name": "emailReceivers",
+            "count": "[if(greater(length(parameters('alertRecipientEmails')), 0), length(parameters('alertRecipientEmails')), 1)]",
+            "input": {
+                "name": "[parameters('alertRecipientEmails')[copyIndex('emailReceivers')].displayName]",
+                "emailAddress": "[parameters('alertRecipientEmails')[copyIndex('emailReceivers')].emailAddress]",
+                "useCommonAlertSchema": false
+            }
+          }
+        ],
+        "smsReceivers": [],
+        "webhookReceivers": [],
+        "itsmReceivers": [],
+        "azureAppPushReceivers": [],
+        "automationRunbookReceivers": [],
+        "voiceReceivers": [],
+        "logicAppReceivers": "[parameters('logicAppReceivers')]",
+        "azureFunctionReceivers": []
+      }
+    }
+  ],
+  "outputs": {
+    "actionGroupResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Insights/actionGroups', variables('actionGroupName'))]"
+    }
+  }
+}

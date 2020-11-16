@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serverName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the server to add firewall rules to"
+      }
+    },
+    "subnetResourceIdList": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "A list of subnet resource ids."
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[replace(concat(parameters('serverName'), '/', if(greater(length(parameters('subnetResourceIdList')), 0) , last(split(parameters('subnetResourceIdList')[copyIndex()], '/')), 'placeholder')), '.', '_')]",
+      "condition": "[greater(length(parameters('subnetResourceIdList')), 0)]",
+      "type": "Microsoft.DBforPostgreSQL/servers/virtualNetworkRules",
+      "apiVersion": "2017-12-01",
+      "properties": {
+        "virtualNetworkSubnetId": "[parameters('subnetResourceIdList')[copyIndex()]]"
+      },
+      "copy":{
+        "count": "[if(greater(length(parameters('subnetResourceIdList')), 0), length(parameters('subnetResourceIdList')), 1)]",
+          "mode": "Parallel",
+          "name": "virtualNetworkRuleCopy"
+        }
+    }
+  ],
+  "outputs": {}
+}

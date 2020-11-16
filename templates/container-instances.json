@@ -77,12 +77,52 @@
       "metadata": {
         "description": "The name of the network profile that will attach to the container instance"
       }
+    },
+    "networkResourceGroup": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Name of the resource group if different from the container instance"
+      }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
+    },
+    "dockerRegistryUrl": {
+      "type": "string",
+      "defaultValue":"docker.io",
+      "metadata": {
+        "description": "URL (do not include https://) of the image registry to pull the image from, eg: docker.io"
+      }
+    },
+    "dockerRegistryUsername": {
+      "type": "string",
+      "defaultValue" : "",
+      "metadata": {
+        "description": "The username to access images in the image registry"
+      }
+    },
+    "dockerRegistryPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password to access images in the registry"
+      }
     }
   },
   "variables": {
     "networkProfile": {
-      "Id": "[if(greater(length(parameters('networkProfileName')) ,0), resourceId('Microsoft.Network/networkProfiles', parameters('networkProfileName')), 'placeholder')]"
-    }
+      "Id": "[if(greater(length(parameters('networkProfileName')) ,0), resourceId(parameters('networkResourceGroup'),'Microsoft.Network/networkProfiles', parameters('networkProfileName')), 'placeholder')]"
+    },
+    "usePrivateRegistry": "[not(empty(parameters('dockerRegistryUsername')))]",
+    "imageRegistryCredentials":[
+      {
+        "server": "[if(startsWith(parameters('dockerRegistryUrl'), 'https://'), substring(parameters('dockerRegistryUrl'), add(indexOf(parameters('dockerRegistryUrl'), '/'), 2)), parameters('dockerRegistryUrl'))]",
+        "username": "[parameters('dockerRegistryUsername')]",
+        "password": "[parameters('dockerRegistryPassword')]"
+      }
+    ]
   },
   "resources": [
     {
@@ -90,6 +130,7 @@
       "type": "Microsoft.ContainerInstance/containerGroups",
       "apiVersion": "2018-10-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "containers": [
           {
@@ -109,14 +150,15 @@
         ],
         "restartPolicy": "[parameters('restartPolicy')]",
         "osType": "[parameters('osType')]",
-        "networkProfile": "[if(greater(length(parameters('networkProfileName')) ,0), variables('networkProfile'), json('null'))]"
+        "networkProfile": "[if(greater(length(parameters('networkProfileName')) ,0), variables('networkProfile'), json('null'))]",
+        "imageRegistryCredentials": "[if(variables('usePrivateRegistry'), variables('imageRegistryCredentials'), json('null'))]"
       }
     }
   ],
   "outputs": {
     "containerIPv4Address": {
       "type": "string",
-      "value": "[if(greater(length(parameters('networkProfileName')) ,0), reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerInstanceName'))).ipAddress.ip, json('null'))]"
+      "value": "[if(greater(length(parameters('networkProfileName')) ,0), reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerInstanceName'))).ipAddress.ip, '')]"
     }
   }
 }

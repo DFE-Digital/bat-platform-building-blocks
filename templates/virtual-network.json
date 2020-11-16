@@ -20,6 +20,10 @@
       "metadata": {
         "description": "Array of objects in the following schema: https://docs.microsoft.com/en-us/azure/templates/microsoft.network/2018-11-01/virtualnetworks#Subnet"
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {},
@@ -29,6 +33,7 @@
       "name": "[parameters('vnetName')]",
       "apiVersion": "2018-11-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [

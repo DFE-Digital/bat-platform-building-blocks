@@ -13,7 +13,8 @@
       "allowedValues": [
         "Basic",
         "Standard",
-        "Premium"
+        "Premium",
+        "PremiumV2"
       ],
       "defaultValue": "Standard",
       "metadata": {
@@ -43,20 +44,27 @@
       "metadata": {
         "description": "Windows or Linux"
       }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
-  "variables": {},
+  "variables": {
+    "v2Suffix": "[if(equals(parameters('appServicePlanTier'),'PremiumV2'), 'v2', '')]"
+  },
   "resources": [
     {
       "type": "Microsoft.Web/serverfarms",
       "name": "[parameters('appServicePlanName')]",
       "apiVersion": "2016-09-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "sku": {
-        "name": "[concat(take(parameters('appServicePlanTier'), 1), parameters('appServicePlanSize'))]",
+        "name": "[concat(take(parameters('appServicePlanTier'), 1), parameters('appServicePlanSize'), variables('v2Suffix'))]",
         "tier": "[parameters('appServicePlanTier')]",
-        "size": "[concat(take(parameters('appServicePlanTier'), 1), parameters('appServicePlanSize'))]",
-        "family": "[take(parameters('appServicePlanTier'), 1)]",
+        "size": "[concat(take(parameters('appServicePlanTier'), 1), parameters('appServicePlanSize'), variables('v2Suffix'))]",
+        "family": "[concat(take(parameters('appServicePlanTier'), 1), variables('v2Suffix'))]",
         "capacity": "[parameters('appServicePlanInstances')]"
       },
       "kind": "[parameters('appServicePlanOS')]",

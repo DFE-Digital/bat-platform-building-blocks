@@ -45,6 +45,10 @@
         "StorageV2",
         "BlobStorage"
       ]
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {},
@@ -54,11 +58,11 @@
       "name": "[parameters('storageAccountName')]",
       "type": "Microsoft.Storage/storageAccounts",
       "location": "[parameters('storageAccountLocation')]",
+      "tags": "[parameters('resourceTags')]",
       "sku": {
         "name": "[parameters('accountType')]"
       },
       "kind": "[parameters('storageKind')]",
-      "tags": {},
       "properties": {
         "encryption": {
           "services": {
@@ -84,6 +88,10 @@
     "storageConnectionString": {
       "type": "string",
       "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
+    },
+    "storageAccountResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
     }
   }
 }

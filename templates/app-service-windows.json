@@ -54,6 +54,13 @@
       "type": "bool",
       "defaultValue": true
     },
+    "http20Enabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Configures a web site to allow clients to connect over http2.0"
+      }
+    },
     "appServiceVirtualApplications": {
       "type": "array",
       "defaultValue": [
@@ -64,6 +71,10 @@
           "virtualDirectories": null
         }
       ]
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
     }
   },
   "variables": {
@@ -76,11 +87,13 @@
       "name": "[parameters('appServiceName')]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "serverFarmId": "[variables('appServicePlanId')]",
         "clientAffinityEnabled": false,
         "httpsOnly": true,
         "state": "[parameters('appServiceState')]",
+        "http20Enabled": "[parameters('http20Enabled')]",
         "siteConfig": {
           "alwaysOn": true,
           "appSettings": "[parameters('appServiceAppSettings')]",
@@ -95,10 +108,12 @@
           "type": "slots",
           "apiVersion": "2016-08-01",
           "location": "[resourceGroup().location]",
+          "tags": "[parameters('resourceTags')]",
           "properties": {
             "serverFarmId": "[variables('appServicePlanId')]",
             "clientAffinityEnabled": false,
             "httpsOnly": true,
+            "http20Enabled": "[parameters('http20Enabled')]",
             "siteConfig": {
               "alwaysOn": true,
               "appSettings": "[parameters('appServiceAppSettings')]",
@@ -118,6 +133,7 @@
       "name": "[concat(parameters('appServiceName'), '/', if(variables('useCustomHostname'), parameters('customHostname'), 'placeholder'))]",
       "apiVersion": "2016-08-01",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "sslState": "SniEnabled",
         "thumbprint": "[parameters('certificateThumbprint')]"

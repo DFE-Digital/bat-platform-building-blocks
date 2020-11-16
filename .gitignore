@@ -1,1 +1,2 @@
-deploy.*
+deploy.*terraform/modules/grafana/files/grafana.zip
+terraform/modules/prometheus/files

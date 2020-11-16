@@ -1,0 +1,307 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceNamePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The CIP naming prefix for the resource, e.g. s106d01-apply."
+      }
+    },
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the resource environment e.g. qa, staging, production."
+      }
+    },
+    "slackChannel": {
+      "type": "string",
+      "metadata": {
+        "description": "The Slack channel to post to."
+      }
+    },
+    "serviceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the service, e.g Apply."
+      }
+    },
+    "slackIconUrl": {
+      "type": "string",
+      "defaultValue": "https://www.denodo.com/sites/default/files/public/images/azure-icon.png",
+      "metadata": {
+        "description": "URL pointing to Icon to display against the Alert App in Slack."
+      }
+    },
+    "resourceTags": {
+      "type": "object",
+      "defaultValue": {}
+    },
+    "enableDiagnostics": {
+      "type": "string",
+      "defaultValue": "none",
+      "allowedValues": [
+        "none",
+        "logs",
+        "metrics",
+        "all"
+      ],
+      "metadata": {
+        "description": "Configure diagnostic logging mode."
+      }
+    },
+    "enableLogRetention": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Enabled diagnotic logging retention feature if set to true."
+      }
+    },
+    "logRetentionDays": {
+      "type": "int",
+      "defaultValue": 31,
+      "metadata": {
+        "description": "Number of days to retain logs for if retention is enabled."
+      }
+    },
+    "storageAccountResourceId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Resource Id of the storage account used for log retention. Value is only required if 'enableDiagnostics' is set."
+      }
+    }
+  },
+  "variables": {
+    "slackApiConnectionName": "[concat(parameters('resourceNamePrefix'), '-apic-slack')]",
+    "logicAppName": "[concat(parameters('resourceNamePrefix'), '-la-slack-alerts')]",
+    "diagnosticSettingName": "[concat(variables('logicAppName'), '-logs')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-06-01",
+      "name": "[variables('slackApiConnectionName')]",
+      "type": "Microsoft.Web/connections",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/slack')]"
+        },
+        "displayName": "Slack",
+        "customParameterValues": {}
+      }
+    },
+    {
+      "apiVersion": "2019-05-01",
+      "name": "[variables('logicAppName')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "context": {
+                          "properties": {
+                            "activityLog": {
+                              "properties": {
+                                "authorization": {
+                                  "properties": {
+                                    "action": {
+                                      "type": "string"
+                                    },
+                                    "scope": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "type": "object"
+                                },
+                                "caller": {
+                                  "type": "string"
+                                },
+                                "claims": {
+                                  "type": "string"
+                                },
+                                "httpRequest": {
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            }, 
+                            "description": {
+                              "type": "string"
+                            },
+                            "resourceGroupName": {
+                              "type": "string"
+                            },
+                            "resourceId": {
+                              "type": "string"
+                            },
+                            "resourceName": {
+                              "type": "string"
+                            },
+                            "resourceType": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "properties": {
+                          "properties": {},
+                          "type": "object"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "schemaId": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "actions": {
+            "Condition": {
+              "actions": {
+                "Post_Activated_Alert_Message": {
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['slack']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/chat.postMessage",
+                    "queries": {
+                      "channel": "[parameters('slackChannel')]",
+                      "icon_url": "[parameters('slackIconUrl')]",
+                      "text": "[concat(':rotating_light: @{triggerBody()?[''data'']?[''context'']?[''description'']} on @{triggerBody()?[''data'']?[''context'']?[''resourceName'']} in *', parameters('environment'), '* has triggered.')]",
+                      "username": "[concat(toUpper(first(parameters('serviceName'))), skip(parameters('serviceName'), 1), ' Azure Alerts')]"
+                    }
+                  },
+                  "runAfter": {},
+                  "type": "ApiConnection"
+                }
+              },
+              "else": {
+                "actions": {
+                  "Post_Deactivated_Alert_Message": {
+                    "inputs": {
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['slack']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "path": "/chat.postMessage",
+                      "queries": {
+                        "channel": "[parameters('slackChannel')]",
+                        "icon_url": "[parameters('slackIconUrl')]",
+                        "text": "[concat(':heavy_check_mark: @{triggerBody()?[''data'']?[''context'']?[''description'']} on @{triggerBody()?[''data'']?[''context'']?[''resourceName'']} in *', parameters('environment'), '* is resolved.')]",
+                        "username": "[concat(toUpper(first(parameters('serviceName'))), skip(parameters('serviceName'), 1), ' Azure Alerts')]"
+                      }
+                    },
+                    "runAfter": {},
+                    "type": "ApiConnection"
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [ "@triggerBody()?['data']?['status']", "Activated" ]
+                  }
+                ]
+              },
+              "runAfter": {},
+              "type": "If"
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "slack": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/slack')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('slackApiConnectionName'))]",
+                "connectionName": "slack"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', variables('slackApiConnectionName'))]"
+      ],
+      "resources": [
+        {
+          "apiVersion": "2017-05-01-preview",
+          "name": "[concat(variables('logicAppName'), '/Microsoft.Insights/', variables('diagnosticSettingName'))]",
+          "type": "Microsoft.Logic/workflows/providers/diagnosticSettings",
+          "condition": "[not(equals(parameters('enableDiagnostics'), 'none'))]",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "name": "[variables('diagnosticSettingName')]",
+            "storageAccountId": "[parameters('storageAccountResourceId')]",
+            "logs": [
+              {
+                "category": "WorkflowRuntime",
+                "enabled": "[if(or(equals(parameters('enableDiagnostics'), 'all'), equals(parameters('enableDiagnostics'), 'logs')), bool('true'), boolo('false'))]",
+                "retentionPolicy": {
+                  "enabled": "[parameters('enableLogRetention')]",
+                  "days": "[if(parameters('enableLogRetention'), parameters('logRetentionDays'), 0)]"
+                }
+              }
+            ],
+            "metrics": [
+              {
+                "category": "AllMetrics",
+                "enabled": "[if(or(equals(parameters('enableDiagnostics'), 'all'), equals(parameters('enableDiagnostics'), 'metrics')), bool('true'), bool('false'))]",
+                "retentionPolicy": {
+                  "enabled": "[parameters('enableLogRetention')]",
+                  "days": "[if(parameters('enableLogRetention'), parameters('logRetentionDays'), 0)]"
+                }
+              }
+            ]
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Logic/workflows', variables('logicAppName'))]"
+          ]
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "logicAppResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Logic/workflows', variables('logicAppName'))]"
+    },
+    "WebHookURI": {
+      "type": "string",
+      "value": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicAppName')), '/triggers/manual'), '2016-06-01').value]"
+    }
+  }
+}
