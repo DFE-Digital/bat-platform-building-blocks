@@ -12,6 +12,13 @@
       "defaultValue": "",
       "type": "string"
     },
+    "disableIpMasking": {
+      "defaultValue": false,
+      "type": "bool",
+      "metadata": {
+        "description": "Whether to disable IP masking or not. Defaults to `false`"
+      }
+    },
     "availabilityTests": {
       "defaultValue": [],
       "type": "array",
@@ -41,7 +48,8 @@
       "tags": "[union(variables('siteTag'),parameters('resourceTags'))]",
       "kind": "web",
       "properties": {
-        "Application_Type": "web"
+        "Application_Type": "web",
+        "DisableIpMasking": "[parameters('disableIpMasking')]"
       }
     },
     {
