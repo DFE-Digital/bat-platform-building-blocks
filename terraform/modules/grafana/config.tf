@@ -7,6 +7,7 @@ data archive_file config {
     filename = "plugins.txt"
   }
 
+
   source {
     content  = templatefile("${path.module}/config/runtime.txt", { runtime_version = var.runtime_version })
     filename = "runtime.txt"
@@ -25,6 +26,20 @@ data archive_file config {
   source {
     content  = templatefile("${path.module}/datasources/prometheus.yml.tmpl", local.prometheus_datasource_variables)
     filename = "datasources/prometheus.yml"
+  }
+
+  source {
+    content  = templatefile("${path.module}/datasources/influxdb.yml.tmpl", local.prometheus_datasource_variables)
+    filename = "datasources/influxdb.yml"
+  }
+
+
+  dynamic "source" {
+    for_each = local.dashboards
+    content {
+      content  = source.value
+      filename = "dashboards/local_${source.key}.json"
+    }
   }
 
   dynamic "source" {

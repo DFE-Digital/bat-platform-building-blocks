@@ -6,6 +6,15 @@ scrape_configs:
   scheme: https
   static_configs:
     - targets: [${paas_prometheus_exporter_endpoint}]
+%{ if include_redis_exporter }
+- job_name: RedisExporter
+  scheme: https
+  static_configs:
+    - targets: [${redis_prometheus_exporter_endpoint}]
+%{ endif }
+%{ if include_scrapes }
+${scrapes}
+%{ endif }
 
 %{ if include_alerting }
 alerting:
