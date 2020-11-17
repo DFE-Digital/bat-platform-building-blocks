@@ -15,6 +15,8 @@ variable json_dashboards { default = [] }
 variable extra_datasources { default = [] }
 
 locals {
+  dashboard_list = fileset(path.module, "dashboards/*.json")
+  dashboards     = [for f in local.dashboard_list : file("${path.module}/${f}")]
   grafana_ini_variables = {
     google_client_id     = var.google_client_id
     google_client_secret = var.google_client_secret
