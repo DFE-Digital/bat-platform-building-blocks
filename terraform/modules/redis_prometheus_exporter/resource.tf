@@ -15,9 +15,7 @@ resource cloudfoundry_app redis-exporter {
   routes {
     route = cloudfoundry_route.redis_exporter.id
   }
-  service_binding {
-    service_instance = var.redis_service_instance_id
-  }
+
   environment = {
     REDIS_ADDR                        = local.url
     REDIS_PASSWORD                    = cloudfoundry_service_key.redis-key.credentials.password
