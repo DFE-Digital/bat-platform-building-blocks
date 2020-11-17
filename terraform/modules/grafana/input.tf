@@ -8,7 +8,7 @@ variable runtime_version { default = "6.5.1" }
 
 variable google_client_id { default = "" }
 variable google_client_secret { default = "" }
-variable influxdb_credentials { default = "" }
+variable influxdb_credentials { default = null }
 
 variable admin_password {}
 variable json_dashboards { default = [] }
