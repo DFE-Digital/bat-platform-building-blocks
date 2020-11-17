@@ -8,6 +8,8 @@ variable runtime_version { default = "6.5.1" }
 
 variable google_client_id { default = "" }
 variable google_client_secret { default = "" }
+variable influxdb_credentials { default = "" }
+
 variable admin_password {}
 variable json_dashboards { default = [] }
 variable extra_datasources { default = [] }
@@ -20,5 +22,9 @@ locals {
   prometheus_datasource_variables = {
     prometheus_endpoint      = var.prometheus_endpoint
     monitoring_instance_name = var.monitoring_instance_name
+    influxdb_hostname        = var.influxdb_credentials.hostname
+    influxdb_port            = var.influxdb_credentials.port
+    influxdb_username        = var.influxdb_credentials.username
+    influxdb_password        = var.influxdb_credentials.password
   }
 }
