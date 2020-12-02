@@ -1,0 +1,38 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serverName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Postgres server to configure"
+            }
+        },
+        "configurations": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "Array of configuration objects [{name: '', value: '', source: ''}]"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.DBforPostgreSQL/servers/configurations",
+            "apiVersion": "2017-12-01",
+            "condition": "[greater(length(parameters('configurations')), 0)]",
+            "copy": {
+                "count": "[length(parameters('configurations'))]",
+                "mode": "Serial",
+                "name": "configurationCopy",
+                "batchSize": 1
+            },
+            "name": "[concat(parameters('serverName'), '/', parameters('configurations')[copyIndex()].name)]",
+            "properties": {
+                "value": "[parameters('configurations')[copyIndex()].value]",
+                "source": "[parameters('configurations')[copyIndex()].source]"
+            }
+        }
+    ]
+}
