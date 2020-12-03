@@ -73,6 +73,13 @@
         "metadata": {
             "description": "Is the instance a read replica of another server?"
         }
+    },
+    "readReplicaExists": {
+        "type": "bool",
+        "defaultValue": false,
+        "metadata": {
+            "description": "Does a read replica already exists?"
+        }      
     }
   },
   "variables": {
@@ -103,6 +110,7 @@
       "name": "[variables('postgresServerName')]",
       "type": "Microsoft.DBforPostgreSQL/servers",
       "apiVersion": "2017-12-01",
+      "condition": "[if(parameters('isReadReplica'), not(parameters('readReplicaExists')), true())]",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
       "sku": "[parameters('postgresSku')]",
