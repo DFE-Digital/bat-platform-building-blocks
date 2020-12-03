@@ -23,16 +23,20 @@
     }
   },
     "postgresAdminLogin": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": ""
     },
     "postgresAdminPassword": {
-      "type": "securestring"
+      "type": "securestring",
+      "defaultValue": ""
     },
     "securityAlertEmailAddress": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": ""
     },
     "storageAccountName": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": ""
     },
     "storageAutoGrow": {
       "type": "string",
@@ -62,58 +66,74 @@
     "resourceTags": {
       "type": "object",
       "defaultValue": {}
+    },
+    "isReadReplica": {
+        "type" : "bool",
+        "defaultValue": false,
+        "metadata": {
+            "description": "Is the instance a read replica of another server?"
+        }
     }
   },
   "variables": {
-    "SecurityAlertPolicyName": "[concat(parameters('postgresServerName'), '-DefaultSecurityAlert')]"
+    "postgresServerName": "[if(parameters('isReadReplica'), concat(parameters('postgresServerName'), '-replica') , parameters('postgresServerName'))]",
+    "createServerProperties": {
+        "createMode": "Default",
+        "administratorLogin": "[parameters('postgresAdminLogin')]",
+        "administratorLoginPassword": "[parameters('postgresAdminPassword')]"
+    },
+    "replicaServerProperties":{
+        "createMode": "Replica",
+        "sourceServerId": "[resourceId('Microsoft.DBforPostgreSQL/servers', parameters('postgresServerName'))]"
+    },
+    "commonServerProperties":{
+        "version": "9.6",
+        "sslEnforcement": "Enabled",
+        "storageProfile": {
+          "storageMB": "[parameters('postgresSku').size]",
+          "backupRetentionDays": "[parameters('backupRetentionDays')]",
+          "geoRedundantBackup": "[parameters('backupToGRS')]",
+          "storageAutoGrow": "[if(parameters('isReadReplica'), null(), parameters('storageAutoGrow'))]"
+        }
+      },
+    "serverProperties": "[union(variables('commonServerProperties'), if(parameters('isReadReplica'), variables('replicaServerProperties'), variables('createServerProperties')))]"
   },
   "resources": [
     {
-      "name": "[parameters('postgresServerName')]",
+      "name": "[variables('postgresServerName')]",
       "type": "Microsoft.DBforPostgreSQL/servers",
       "apiVersion": "2017-12-01",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
       "sku": "[parameters('postgresSku')]",
+      "properties": "[variables('serverProperties')]",
+      "resources": []
+    },
+    {
+      "name": "[concat(variables('postgresServerName'), '/', 'DefaultSecurityAlert')]",
+      "type": "Microsoft.DBforPostgreSQL/servers/securityAlertPolicies",
+      "apiVersion": "2017-12-01",
+      "condition": "[equals(parameters('isReadReplica'), 'false')]",
       "properties": {
-        "storageProfile": {
-          "storageMB": "[parameters('postgresSku').size]",
-          "backupRetentionDays": "[parameters('backupRetentionDays')]",
-          "geoRedundantBackup": "[parameters('backupToGRS')]",
-          "storageAutoGrow": "[parameters('storageAutoGrow')]"
-        },
-        "version": "9.6",
-        "sslEnforcement": "Enabled",
-        "administratorLogin": "[parameters('postgresAdminLogin')]",
-        "administratorLoginPassword": "[parameters('postgresAdminPassword')]"
+        "state": "Enabled",
+        "disabledAlerts": [],
+        "emailAddresses": [
+          "[parameters('securityAlertEmailAddress')]"
+        ],
+        "emailAccountAdmins": false,
+        "retentionDays": 90,
+        "storageEndpoint": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/')]",
+        "storageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
       },
-      "resources": [
-        {
-          "name": "[variables('securityAlertPolicyName')]",
-          "type": "securityAlertPolicies",
-          "apiVersion": "2017-12-01",
-          "properties": {
-            "state": "Enabled",
-            "disabledAlerts": [],
-            "emailAddresses": [
-              "[parameters('securityAlertEmailAddress')]"
-            ],
-            "emailAccountAdmins": false,
-            "retentionDays": 90,
-            "storageEndpoint": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/')]",
-            "storageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
-          },
-          "dependsOn": [
-            "[parameters('postgresServerName')]"
-          ]
-        }
+      "dependsOn": [
+        "[variables('postgresServerName')]"
       ]
     }
   ],
   "outputs": {
     "fullyQualifiedDomainName": {
       "type": "string",
-      "value": "[reference(parameters('postgresServerName')).fullyQualifiedDomainName]"
+      "value": "[reference(resourceId('Microsoft.DBforPostgreSQL/servers', variables('postgresServerName')), '2017-12-01').fullyQualifiedDomainName]"
     }
   }
 }
