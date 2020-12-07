@@ -1,0 +1,19 @@
+%product  fetch-config
+%copyright 2020 by Department for Education
+%vendor Steven Fawcett
+%description Installs the fetch-config application
+%version 0.1
+%readme README.md
+%license ../../LICENSE
+%requires ruby
+
+f 755 root sys /usr/bin/fetch_config.rb fetch_config.rb
+f 644 root sys /var/lib/fetch_config/Gemfile Gemfile
+
+%postinstall <<EOF
+cd /var/lib/fetch_config
+apt update -y
+apt-get install -y  build-essential patch ruby-dev zlib1g-dev liblzma-dev
+gem install bundler
+/usr/local/bin/bundler install
+EOF
