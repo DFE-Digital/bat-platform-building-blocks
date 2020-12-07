@@ -4,7 +4,7 @@
 %description Installs the fetch-config application
 %version 0.1
 %readme README.md
-%license LICENSE
+%license ../../LICENSE
 %requires ruby
 
 f 755 root sys /usr/bin/fetch_config.rb fetch_config.rb
