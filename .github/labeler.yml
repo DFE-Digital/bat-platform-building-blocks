@@ -1,5 +1,6 @@
 ---
-
-Docker:
-  - Dockerfile 
-  - docker-run.sh
+Terraform:
+  - terraform/**/*
+  
+SecretHandler:
+  - scripts/fetch_config/**/*
