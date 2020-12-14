@@ -5,9 +5,10 @@ require 'yaml'
 require 'aws-sdk-ssm'
 require 'erb'
 require 'tempfile'
+require 'net/http'
 
-ALLOWED_SOURCES = ['aws-ssm-parameter', 'aws-ssm-parameter-path', 'yaml-file']
-ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet']
+ALLOWED_SOURCES = ['aws-ssm-parameter', 'aws-ssm-parameter-path', 'yaml-file', 'azure-key-vault-secret']
+ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet', 'azure-key-vault-secret']
 ALLOWED_FORMATS = ['hash', 'shell-env-var', 'tf-shell-env-var', 'yaml', 'json']
 EDITOR = 'vim'
 
@@ -22,12 +23,14 @@ def usage
       aws-ssm-parameter:<locator> aws-ssm-parameter name in AWS SSM Parameter store
       aws-ssm-parameter-path:<locator> parameter path in AWS SSM Parameter store hierarchy
       yaml-file:<locator> path to yaml file containing parameters
+      azure-key-vault-secret:<keyvault/secret> secret in Azure key vault
     -e (--edit): open editor to edit variables manually before output
     -d (--destination): Destination of variables
       stdout (default) : Write to standard out
       file:<path> : Write to file at <path>
       command : Run command in environment populated by the variables. Requires '-- <command>' at the end of the line
       quiet : No output (Validates input)
+      azure-key-vault-secret:<keyvault/secret> : Secret in Azure key vault
     -f (--format): Output format
       hash (default): Raw ruby hash {KEY => VALUE}
       shell-env-var: Standard shell environment variables KEY=VALUE (Not for nested variables)
@@ -59,7 +62,9 @@ def extract_destination(arg)
   @log.debug "Extract destination from #{arg}"
   destination_type, destination_locator = arg.split(':')
   usage unless ALLOWED_DESTINATION.include? destination_type
-  usage if destination_type == 'file' && ! destination_locator
+  usage if ! destination_locator && (
+    destination_type == 'file' || destination_type == 'azure-key-vault-secret'
+  )
   new_destination = {type: destination_type, locator: destination_locator}
   @log.debug "Found destination #{new_destination}"
   new_destination
@@ -71,9 +76,38 @@ def run_command_with_env(config_map, command)
   exec command
 end
 
+def push_to_azure_key_vault_secret(output_string, azure_key_vault_secret)
+  @log.debug 'Updating Azure key vault secrets ' + azure_key_vault_secret.to_s
+  key_vault_access_token = get_key_vault_token
+  config_map = {}
+
+  key_vault, secret_name = azure_key_vault_secret.split('/')
+  vault_base_url = "https://#{key_vault}.vault.azure.net"
+
+  uri = URI("#{vault_base_url}/secrets/#{secret_name}?api-version=7.1")
+  body = {'value' => output_string}.to_json
+
+  req = Net::HTTP::Put.new(uri)
+  req["Authorization"] = "Bearer #{key_vault_access_token}"
+  req["Content-type"] = "application/json"
+  req.body = body
+
+  res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == 'https') do |http|
+    http.request(req)
+  end
+
+  if res.is_a? Net::HTTPSuccess
+    @log.debug "Secret #{secret_name} updated successfully in key vault #{key_vault}"
+  else
+    message = "Failed updating secret #{secret_name} in key vault #{key_vault}. "
+    message << "Response: #{res.code} #{Net::HTTPResponse::CODE_TO_OBJ[res.code]} #{res.body}"
+    raise  message
+  end
+end
+
 def pull_ssm_parameters(parameters)
-  @log.debug 'Fetching parameters ' + parameters.to_s
   return {} unless parameters
+  @log.debug 'Fetching parameters ' + parameters.to_s
   config_map = {}
   ssm_client = Aws::SSM::Client.new(region: 'eu-west-2')
 
@@ -95,8 +129,8 @@ def pull_ssm_parameters(parameters)
 end
 
 def pull_ssm_parameter_paths(parameter_paths)
-  @log.debug 'Fetching parameters in paths ' + parameter_paths.to_s
   return {} unless parameter_paths
+  @log.debug 'Fetching parameters in paths ' + parameter_paths.to_s
   config_map = {}
   ssm_client = Aws::SSM::Client.new(region: 'eu-west-2')
 
@@ -121,8 +155,8 @@ def pull_ssm_parameter_paths(parameter_paths)
 end
 
 def read_from_yaml_files(yaml_files)
-  @log.debug 'Fetching parameters from files ' + yaml_files.to_s
   return {} unless yaml_files
+  @log.debug 'Fetching parameters from files ' + yaml_files.to_s
   config_map = {}
 
   yaml_files.each{ |yaml_file|
@@ -135,6 +169,43 @@ def read_from_yaml_files(yaml_files)
     config_map.update parameter_map
   }
 
+  config_map
+end
+
+def get_key_vault_token
+  token_json = `az account get-access-token -o json --resource https://vault.azure.net`
+  raise "az account get-access-token failed" if $?.exitstatus != 0
+  JSON.load(token_json)["accessToken"]
+end
+
+def pull_azure_key_vault_secret(azure_key_vault_secrets)
+  return {} unless azure_key_vault_secrets
+  @log.debug 'Fetching Azure key vault secrets ' + azure_key_vault_secrets.to_s
+  key_vault_access_token = get_key_vault_token
+  config_map = {}
+
+  azure_key_vault_secrets.each do |azure_key_vault_secret|
+    key_vault, secret_name = azure_key_vault_secret.split('/')
+    vault_base_url = "https://#{key_vault}.vault.azure.net"
+
+    uri = URI("#{vault_base_url}/secrets/#{secret_name}?api-version=7.1")
+    req = Net::HTTP::Get.new(uri)
+    req["Authorization"] = "Bearer #{key_vault_access_token}"
+    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == 'https') do |http|
+      http.request(req)
+    end
+
+    secret_hash = JSON.load(res.body)
+    secret_value = secret_hash["value"]
+
+    begin
+      parameter_map = YAML.load(secret_value)
+    rescue Psych::SyntaxError => e
+      puts "Error: Syntax error in Azure key vault secret " + azure_key_vault_secret
+      raise e
+    end
+    config_map.update parameter_map
+  end
   config_map
 end
 
@@ -236,6 +307,7 @@ config_map = {}
 config_map.update(pull_ssm_parameters sources['aws-ssm-parameter'])
 config_map.update(pull_ssm_parameter_paths sources['aws-ssm-parameter-path'])
 config_map.update(read_from_yaml_files sources['yaml-file'])
+config_map.update(pull_azure_key_vault_secret sources['azure-key-vault-secret'])
 
 ##### Transform #####
 config_map = sort_by_key(config_map)
@@ -267,4 +339,6 @@ when 'file'
   File.write(destination[:locator], output_string)
 when 'command'
   run_command_with_env(config_map, destination[:command])
+when 'azure-key-vault-secret'
+  push_to_azure_key_vault_secret(output_string, destination[:locator])
 end
