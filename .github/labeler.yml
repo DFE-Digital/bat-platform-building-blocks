@@ -1,0 +1,6 @@
+---
+Terraform:
+  - terraform/**/*
+  
+SecretHandler:
+  - scripts/fetch_config/**/*
