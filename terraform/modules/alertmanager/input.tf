@@ -15,6 +15,6 @@ locals {
 }
 
 locals {
-  config         = var.config == "" ? templatefile("${path.module}/config/alertmanager.yml", local.alertmanager_variables) : var.config
+  config         = var.config == "" ? templatefile("${path.module}/config/alertmanager.yml.tmpl", local.alertmanager_variables) : var.config
   slack_template = file("${path.module}/config/slack.tmpl")
 }
