@@ -1,6 +1,8 @@
 global:
  resolve_timeout: 1m
+ %{ if slack_url != "" ~}
  slack_api_url: '${slack_url}'
+ %{ endif ~}
 
 route:
  receiver: 'slack-notifications'
@@ -12,6 +14,7 @@ templates:
 
 receivers:
 - name: slack-notifications
+%{ if slack_url != "" ~}
   slack_configs:
   - channel: '#${slack_channel}'
     send_resolved: true
@@ -32,3 +35,4 @@ receivers:
     - type: button
       text: 'Silence :no_bell:'
       url: '{{ template "__alert_silence_link" . }}'
+ %{ endif ~}
