@@ -37,6 +37,8 @@ module alertmanager {
   monitoring_instance_name = var.monitoring_instance_name
   monitoring_space_id      = data.cloudfoundry_space.monitoring.id
   config                   = var.alertmanager_config
+  slack_url                = var.alertmanager_slack_url
+  slack_channel            = var.alertmanager_slack_channel
 }
 
 module grafana {
