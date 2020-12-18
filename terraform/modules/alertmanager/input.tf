@@ -6,7 +6,6 @@ variable config { default = "" }
 
 variable slack_url { default = "" }
 variable slack_channel { default = "" }
-
 locals {
   alertmanager_variables = {
     slack_url     = var.slack_url
