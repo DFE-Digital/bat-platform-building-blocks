@@ -17,8 +17,8 @@ resource cloudfoundry_app redis-exporter {
   }
 
   environment = {
-    REDIS_ADDR                        = local.url
-    REDIS_PASSWORD                    = cloudfoundry_service_key.redis-key.credentials.password
+    REDIS_ADDR     = local.url
+    REDIS_PASSWORD = cloudfoundry_service_key.redis-key.credentials.password
   }
 }
 
