@@ -90,6 +90,13 @@
         "description": "Enable logging of HTTP calls to the app"
       }
     },
+    "healthCheckPath":{
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "When more than 1 app service instance is configured, the relative path which determines the health of an instance for the load balancer"
+      }
+    },
     "resourceTags": {
       "type": "object",
       "defaultValue": {}
@@ -104,7 +111,7 @@
       "type": "Microsoft.Web/sites",
       "name": "[parameters('appServiceName')]",
       "kind": "app,linux,container",
-      "apiVersion": "2016-08-01",
+      "apiVersion": "2020-09-01",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('resourceTags')]",
       "properties": {
@@ -119,7 +126,8 @@
           "appCommandLine": "[parameters('customStartupCommand')]"
         },
         "http20Enabled": "[parameters('http20Enabled')]",
-        "httpsOnly": true
+        "httpsOnly": true,
+        "healthCheckPath": "[parameters('healthCheckPath')]"
       }
     },
     {
@@ -140,7 +148,8 @@
           "appCommandLine": "[parameters('customStartupCommand')]"
         },
         "http20Enabled": "[parameters('http20Enabled')]",
-        "httpsOnly": true
+        "httpsOnly": true,
+        "healthCheckPath": "[parameters('healthCheckPath')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
