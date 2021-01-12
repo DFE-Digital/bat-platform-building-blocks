@@ -12,12 +12,16 @@
       "type": "int",
       "defaultValue": 2
     },
+    "dbStorageMB" : {
+      "type": "int",
+      "defaultValue": 5120
+    },    
      "postgresSku": {
        "type": "object",
        "defaultValue": {
        "name": "[concat('GP_Gen5_', parameters('dbServerCpuCores'))]",
        "tier": "GeneralPurpose",
-       "size": 5120,
+       "size": "[parameters('dbStorageMB')]",
        "family": "Gen5",
        "capacity": "[parameters('dbServerCpuCores')]"
     }
