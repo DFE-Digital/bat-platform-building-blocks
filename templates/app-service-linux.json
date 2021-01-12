@@ -123,11 +123,11 @@
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
           "linuxFxVersion": "[if(not(parameters('deploymentUsingSlots')), parameters('runtimeStack'), json('null'))]",
-          "appCommandLine": "[parameters('customStartupCommand')]"
+          "appCommandLine": "[parameters('customStartupCommand')]",
+          "http20Enabled": "[parameters('http20Enabled')]",
+          "healthCheckPath": "[parameters('healthCheckPath')]"
         },
-        "http20Enabled": "[parameters('http20Enabled')]",
-        "httpsOnly": true,
-        "healthCheckPath": "[parameters('healthCheckPath')]"
+        "httpsOnly": true
       }
     },
     {
@@ -145,9 +145,10 @@
           "linuxFxVersion": "[parameters('runtimeStack')]",
           "appSettings": "[parameters('appServiceAppSettings')]",
           "connectionStrings": "[parameters('appServiceConnectionStrings')]",
-          "appCommandLine": "[parameters('customStartupCommand')]"
+          "appCommandLine": "[parameters('customStartupCommand')]",
+          "http20Enabled": "[parameters('http20Enabled')]",
+          "healthCheckPath": "[parameters('healthCheckPath')]"
         },
-        "http20Enabled": "[parameters('http20Enabled')]",
         "httpsOnly": true,
         "healthCheckPath": "[parameters('healthCheckPath')]"
       },
