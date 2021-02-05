@@ -5,6 +5,7 @@ require 'yaml'
 require 'erb'
 require 'tempfile'
 require 'net/http'
+require 'json'
 
 ALLOWED_SOURCES = ['aws-ssm-parameter', 'aws-ssm-parameter-path', 'yaml-file', 'azure-key-vault-secret']
 ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet', 'azure-key-vault-secret']
