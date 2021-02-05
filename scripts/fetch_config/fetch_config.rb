@@ -2,7 +2,6 @@
 require 'getoptlong'
 require 'logger'
 require 'yaml'
-require 'aws-sdk-ssm'
 require 'erb'
 require 'tempfile'
 require 'net/http'
@@ -107,6 +106,7 @@ end
 
 def pull_ssm_parameters(parameters)
   return {} unless parameters
+  require 'aws-sdk-ssm'
   @log.debug 'Fetching parameters ' + parameters.to_s
   config_map = {}
   ssm_client = Aws::SSM::Client.new(region: 'eu-west-2')
@@ -130,6 +130,7 @@ end
 
 def pull_ssm_parameter_paths(parameter_paths)
   return {} unless parameter_paths
+  require 'aws-sdk-ssm'
   @log.debug 'Fetching parameters in paths ' + parameter_paths.to_s
   config_map = {}
   ssm_client = Aws::SSM::Client.new(region: 'eu-west-2')
