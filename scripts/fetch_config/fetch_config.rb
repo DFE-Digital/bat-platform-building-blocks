@@ -37,6 +37,7 @@ def usage
       tf-shell-env-var: Terraform environment variables TF_VAR_KEY=VALUE (Not for nested variables)
       yaml: Yaml
       json: Raw json (single line)
+    -c (--confirm): Ask for confirmation before writing to destination
     -v (--verbose): verbose output
   EOF
   @log.debug caller
@@ -255,6 +256,19 @@ def open_in_editor(config_map)
   new_map
 end
 
+def ask_to_confirm(destination, output_string)
+  puts "About to write the following to #{destination[:type]} #{destination[:parameter]}"
+  puts "################################################################################"
+  puts output_string
+  puts "################################################################################"
+  print "Enter 'yes' to confirm: "
+  answer = gets.chomp
+  if answer != 'yes'
+    puts 'Cancelled'
+    exit
+  end
+end
+
 ##### Configuration #####
 opts = GetoptLong.new(
   [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
@@ -262,6 +276,7 @@ opts = GetoptLong.new(
   [ '--edit', '-e', GetoptLong::NO_ARGUMENT ],
   [ '--destination', '-d', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--format', '-f', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--confirm', '-c', GetoptLong::NO_ARGUMENT ],
   [ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -270,6 +285,7 @@ edit = false
 destination = nil
 output_format = nil
 command = nil
+confirm = false
 
 opts.each do |opt, arg|
   case opt
@@ -287,6 +303,8 @@ opts.each do |opt, arg|
   when '--format'
     usage unless ALLOWED_FORMATS.include? arg
     output_format = arg
+  when '--confirm'
+    confirm = true
   when '--verbose'
     @log.level = Logger::DEBUG
   end
@@ -332,6 +350,10 @@ when 'json'
 else
   output_string = config_map.to_s
 end
+
+
+##### Confirm #####
+ask_to_confirm(destination, output_string) if confirm
 
 ##### Output #####
 case destination[:type]
