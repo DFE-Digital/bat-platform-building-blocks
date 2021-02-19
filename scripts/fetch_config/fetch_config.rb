@@ -17,12 +17,12 @@ EDITOR = 'vim'
 
 def usage
   puts <<~EOF
-  Usage: fetch_config.sh [-v] -s type:locator [-s type:locator]... [-d type[:locator]] [-f format] [-- <command>]
+  Usage: fetch_config.sh [-v] -s type:<locator> [-s type:<locator>]... [-d type[<locator>]] [-f format] [-- <command>]
   Arguments:
     -s (--source): Source of variables
-      aws-ssm-parameter:<locator> aws-ssm-parameter name in AWS SSM Parameter store
-      aws-ssm-parameter-path:<locator> parameter path in AWS SSM Parameter store hierarchy
-      yaml-file:<locator> path to yaml file containing parameters
+      aws-ssm-parameter:<parameter-name> aws-ssm-parameter name in AWS SSM Parameter store
+      aws-ssm-parameter-path:<parameter-path> parameter path in AWS SSM Parameter store hierarchy
+      yaml-file:<path> path to yaml file containing parameters
       azure-key-vault-secret:<keyvault/secret> secret in Azure key vault
     -e (--edit): open editor to edit variables manually before output
     -d (--destination): Destination of variables
@@ -37,6 +37,7 @@ def usage
       tf-shell-env-var: Terraform environment variables TF_VAR_KEY=VALUE (Not for nested variables)
       yaml: Yaml
       json: Raw json (single line)
+    -c (--confirm): Ask for confirmation before writing to destination
     -v (--verbose): verbose output
   EOF
   @log.debug caller
@@ -50,22 +51,22 @@ end
 
 def collect_source(arg)
   @log.debug "Extract source from #{arg}"
-  source_type, source_locator = arg.split(':')
+  source_type, source_parameter = arg.split(':')
   usage unless ALLOWED_SOURCES.include? source_type
-  usage unless source_locator
-  new_source = {source_type => [source_locator]}
+  usage unless source_parameter
+  new_source = {source_type => [source_parameter]}
   @log.debug "Collecting #{new_source}"
   new_source
 end
 
 def extract_destination(arg)
   @log.debug "Extract destination from #{arg}"
-  destination_type, destination_locator = arg.split(':')
+  destination_type, destination_parameter = arg.split(':')
   usage unless ALLOWED_DESTINATION.include? destination_type
-  usage if ! destination_locator && (
+  usage if ! destination_parameter && (
     destination_type == 'file' || destination_type == 'azure-key-vault-secret'
   )
-  new_destination = {type: destination_type, locator: destination_locator}
+  new_destination = {type: destination_type, parameter: destination_parameter}
   @log.debug "Found destination #{new_destination}"
   new_destination
 end
@@ -255,6 +256,19 @@ def open_in_editor(config_map)
   new_map
 end
 
+def ask_to_confirm(destination, output_string)
+  puts "About to write the following to #{destination[:type]} #{destination[:parameter]}"
+  puts "################################################################################"
+  puts output_string
+  puts "################################################################################"
+  print "Enter 'yes' to confirm: "
+  answer = gets.chomp
+  if answer != 'yes'
+    puts 'Cancelled'
+    exit
+  end
+end
+
 ##### Configuration #####
 opts = GetoptLong.new(
   [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
@@ -262,6 +276,7 @@ opts = GetoptLong.new(
   [ '--edit', '-e', GetoptLong::NO_ARGUMENT ],
   [ '--destination', '-d', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--format', '-f', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--confirm', '-c', GetoptLong::NO_ARGUMENT ],
   [ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
 
@@ -270,6 +285,7 @@ edit = false
 destination = nil
 output_format = nil
 command = nil
+confirm = false
 
 opts.each do |opt, arg|
   case opt
@@ -287,6 +303,8 @@ opts.each do |opt, arg|
   when '--format'
     usage unless ALLOWED_FORMATS.include? arg
     output_format = arg
+  when '--confirm'
+    confirm = true
   when '--verbose'
     @log.level = Logger::DEBUG
   end
@@ -300,7 +318,7 @@ destination = {type: 'stdout'} unless destination
 if destination[:type] == 'command'
   command = ARGV.join(' ')
   usage unless command != ''
-  destination[:command] = command
+  destination[:parameter] = command
 end
 
 ##### Pull data #####
@@ -333,14 +351,18 @@ else
   output_string = config_map.to_s
 end
 
+
+##### Confirm #####
+ask_to_confirm(destination, output_string) if confirm
+
 ##### Output #####
 case destination[:type]
 when 'stdout'
   puts output_string
 when 'file'
-  File.write(destination[:locator], output_string)
+  File.write(destination[:parameter], output_string)
 when 'command'
-  run_command_with_env(config_map, destination[:command])
+  run_command_with_env(config_map, destination[:parameter])
 when 'azure-key-vault-secret'
-  push_to_azure_key_vault_secret(output_string, destination[:locator])
+  push_to_azure_key_vault_secret(output_string, destination[:parameter])
 end
