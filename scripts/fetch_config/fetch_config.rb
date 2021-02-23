@@ -10,7 +10,7 @@ require 'json'
 ALLOWED_SOURCES = ['aws-ssm-parameter', 'aws-ssm-parameter-path', 'yaml-file', 'azure-key-vault-secret']
 ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet', 'azure-key-vault-secret']
 ALLOWED_FORMATS = ['hash', 'shell-env-var', 'tf-shell-env-var', 'yaml', 'json']
-EDITOR = 'vim'
+EDITOR = ENV.fetch('VISUAL', ENV.fetch('EDITOR', 'vi'))
 
 @log = Logger.new(STDOUT)
 @log.level = Logger::INFO
