@@ -198,7 +198,7 @@ def pull_azure_key_vault_secret(azure_key_vault_secrets)
       http.request(req)
     end
 
-    secret_hash = JSON.load(res.body)
+    secret_hash = process_azure_response!(res.body)
     secret_value = secret_hash["value"]
 
     begin
@@ -210,6 +210,17 @@ def pull_azure_key_vault_secret(azure_key_vault_secrets)
     config_map.update parameter_map
   end
   config_map
+end
+
+def process_azure_response!(body)
+  json_response = JSON.parse(body)
+
+  if json_response.key? "error"
+    @log.error("Error found in Azure response: #{json_response['error']['code']}\n#{json_response['error']['message']}")
+    raise "Azure response contained error"
+  end
+
+  json_response
 end
 
 def make_tf_vars_map(config_map)
