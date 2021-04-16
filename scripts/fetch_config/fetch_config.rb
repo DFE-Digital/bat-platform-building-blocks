@@ -53,6 +53,7 @@ def collect_source(arg)
   @log.debug "Extract source from #{arg}"
   source_type, source_parameter = arg.split(':')
   usage unless ALLOWED_SOURCES.include? source_type
+  source_parameter = "#{ENV['key_vault_name']}/#{ENV['key_vault_app_secret_name']}" if source_parameter.nil? && source_type == 'azure-key-vault-secret'
   usage unless source_parameter
   new_source = {source_type => [source_parameter]}
   @log.debug "Collecting #{new_source}"
@@ -63,9 +64,9 @@ def extract_destination(arg)
   @log.debug "Extract destination from #{arg}"
   destination_type, destination_parameter = arg.split(':')
   usage unless ALLOWED_DESTINATION.include? destination_type
-  usage if ! destination_parameter && (
-    destination_type == 'file' || destination_type == 'azure-key-vault-secret'
-  )
+  usage if ! destination_parameter && destination_type == 'file'
+  destination_parameter = "#{ENV['key_vault_name']}/#{ENV['key_vault_app_secret_name']}" if destination_parameter.nil? && destination_type == 'azure-key-vault-secret'
+  @log.debug "destination_parameter is #{destination_parameter}"
   new_destination = {type: destination_type, parameter: destination_parameter}
   @log.debug "Found destination #{new_destination}"
   new_destination
