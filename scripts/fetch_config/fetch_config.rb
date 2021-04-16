@@ -23,14 +23,16 @@ def usage
       aws-ssm-parameter:<parameter-name> aws-ssm-parameter name in AWS SSM Parameter store
       aws-ssm-parameter-path:<parameter-path> parameter path in AWS SSM Parameter store hierarchy
       yaml-file:<path> path to yaml file containing parameters
-      azure-key-vault-secret:<keyvault/secret> secret in Azure key vault
+      azure-key-vault-secret[:<keyvault-name/secret-name>] secret in Azure key vault
+      if keyvault-name and secret-name are not specified, the values are read from 'key_vault_name' and 'key_vault_app_secret_name' environment variables
     -e (--edit): open editor to edit variables manually before output
     -d (--destination): Destination of variables
       stdout (default) : Write to standard out
       file:<path> : Write to file at <path>
       command : Run command in environment populated by the variables. Requires '-- <command>' at the end of the line
       quiet : No output (Validates input)
-      azure-key-vault-secret:<keyvault/secret> : Secret in Azure key vault
+      azure-key-vault-secret[:<keyvault-name/secret-name>] : Secret in Azure key vault
+      if keyvault-name and secret-name are not specified, the values are read from 'key_vault_name' and 'key_vault_app_secret_name' environment variables
     -f (--format): Output format
       hash (default): Raw ruby hash {KEY => VALUE}
       shell-env-var: Standard shell environment variables KEY=VALUE (Not for nested variables)
