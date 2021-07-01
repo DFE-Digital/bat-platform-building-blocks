@@ -324,6 +324,8 @@ opts.each do |opt, arg|
   end
 end
 
+@log.level = Logger::DEBUG if ENV['FETCH_CONFIG_VERBOSE']
+
 ##### Validation #####
 usage if sources.empty?
 
