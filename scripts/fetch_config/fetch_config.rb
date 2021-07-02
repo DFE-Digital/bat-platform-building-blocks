@@ -6,6 +6,7 @@ require 'erb'
 require 'tempfile'
 require 'net/http'
 require 'json'
+require 'shellwords'
 
 ALLOWED_SOURCES = ['aws-ssm-parameter', 'aws-ssm-parameter-path', 'yaml-file', 'azure-key-vault-secret']
 ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet', 'azure-key-vault-secret']
@@ -263,8 +264,9 @@ def open_in_editor(config_map)
   Tempfile.create { |f|
     YAML.dump(config_map, f)
     f.rewind
-    @log.debug "Opening file #{f.path} with editor: #{EDITOR}"
-    system(EDITOR, f.path)
+    cmd = "#{EDITOR} #{Shellwords.escape(f.path)}"
+    @log.debug "Editing config file: #{cmd}"
+    raise "Editor error: #{$?}" unless system(cmd)
     new_map = YAML.load_file(f.path)
   }
   new_map
@@ -323,6 +325,8 @@ opts.each do |opt, arg|
     @log.level = Logger::DEBUG
   end
 end
+
+@log.level = Logger::DEBUG if ENV['FETCH_CONFIG_VERBOSE']
 
 ##### Validation #####
 usage if sources.empty?
