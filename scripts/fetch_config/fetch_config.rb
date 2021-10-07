@@ -11,6 +11,7 @@ require 'shellwords'
 ALLOWED_SOURCES = ['aws-ssm-parameter', 'aws-ssm-parameter-path', 'yaml-file', 'azure-key-vault-secret']
 ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet', 'azure-key-vault-secret']
 ALLOWED_FORMATS = ['hash', 'shell-env-var', 'tf-shell-env-var', 'yaml', 'json']
+ALLOWED_SECRET_TYPES = ['app', 'infra']
 EDITOR = ENV.fetch('VISUAL', ENV.fetch('EDITOR', 'vi'))
 
 @log = Logger.new(STDOUT)
@@ -20,6 +21,9 @@ def usage
   puts <<~EOF
   Usage: fetch_config.sh [-v] -s type:<locator> [-s type:<locator>]... [-d type[<locator>]] [-f format] [-- <command>]
   Arguments:
+    -t (--secret-type): Secret type
+      app : This is the default value. App secrets, if secret-name is not supplied to azure-key-vault-secret, the value will be read from 'key_vault_app_secret_name' environment variable
+      infra : Infra secrets, if secret-name is not supplied to azure-key-vault-secret, the value will be read from 'key_vault_infra_secret_name' environment variable
     -s (--source): Source of variables
       aws-ssm-parameter:<parameter-name> aws-ssm-parameter name in AWS SSM Parameter store
       aws-ssm-parameter-path:<parameter-path> parameter path in AWS SSM Parameter store hierarchy
@@ -52,23 +56,27 @@ def error_exit(message)
   exit 2
 end
 
-def collect_source(arg)
+def collect_source(arg, secret_type = 'app')
   @log.debug "Extract source from #{arg}"
   source_type, source_parameter = arg.split(':')
   usage unless ALLOWED_SOURCES.include? source_type
-  source_parameter = "#{ENV['key_vault_name']}/#{ENV['key_vault_app_secret_name']}" if source_parameter.nil? && source_type == 'azure-key-vault-secret'
+  @log.debug "secret_type is #{secret_type}"
+  key_vault_secret_name = secret_type == 'app' ? ENV['key_vault_app_secret_name'] : ENV['key_vault_infra_secret_name']
+  source_parameter = "#{ENV['key_vault_name']}/#{key_vault_secret_name}" if source_parameter.nil? && source_type == 'azure-key-vault-secret'
   usage unless source_parameter
   new_source = {source_type => [source_parameter]}
   @log.debug "Collecting #{new_source}"
   new_source
 end
 
-def extract_destination(arg)
+def extract_destination(arg, secret_type = 'app')
   @log.debug "Extract destination from #{arg}"
   destination_type, destination_parameter = arg.split(':')
   usage unless ALLOWED_DESTINATION.include? destination_type
   usage if ! destination_parameter && destination_type == 'file'
-  destination_parameter = "#{ENV['key_vault_name']}/#{ENV['key_vault_app_secret_name']}" if destination_parameter.nil? && destination_type == 'azure-key-vault-secret'
+  @log.debug "secret_type is #{secret_type}"
+  key_vault_secret_name = secret_type == 'app' ? ENV['key_vault_app_secret_name'] : ENV['key_vault_infra_secret_name']
+  destination_parameter = "#{ENV['key_vault_name']}/#{key_vault_secret_name}" if destination_parameter.nil? && destination_type == 'azure-key-vault-secret'
   @log.debug "destination_parameter is #{destination_parameter}"
   new_destination = {type: destination_type, parameter: destination_parameter}
   @log.debug "Found destination #{new_destination}"
@@ -288,6 +296,7 @@ end
 ##### Configuration #####
 opts = GetoptLong.new(
   [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
+  [ '--secret-type', '-t', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--source', '-s', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--edit', '-e', GetoptLong::NO_ARGUMENT ],
   [ '--destination', '-d', GetoptLong::OPTIONAL_ARGUMENT ],
@@ -302,20 +311,25 @@ destination = nil
 output_format = nil
 command = nil
 confirm = false
+secret_type = 'app'
 
 opts.each do |opt, arg|
   case opt
   when '--help'
     usage
+  when '--secret-type'
+    usage unless ALLOWED_SECRET_TYPES.include? arg
+    @log.debug "secret_type is #{arg}"
+    secret_type = arg
   when '--source'
-    sources.update(collect_source(arg)){ |k, v1, v2|
+    sources.update(collect_source(arg, secret_type)){ |k, v1, v2|
       @log.debug "Appending #{v2} to #{v1}"
       v1 + v2
     }
   when '--edit'
     edit = true
   when '--destination'
-    destination = extract_destination(arg)
+    destination = extract_destination(arg, secret_type)
   when '--format'
     usage unless ALLOWED_FORMATS.include? arg
     output_format = arg
