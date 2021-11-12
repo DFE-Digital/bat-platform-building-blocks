@@ -42,6 +42,9 @@ filter {
       match => { "syslog_msg" => "%{HOSTNAME:[access][host]} - \[%{TIMESTAMP_ISO8601:router_timestamp}\] \"%{WORD:[access][method]} %{NOTSPACE:[access][url]} HTTP/%{NUMBER:[access][http_version]}\" %{NONNEGINT:[access][response_code]:int} %{NONNEGINT:[access][body_received][bytes]:int} %{NONNEGINT:[access][body_sent][bytes]:int} %{QUOTEDSTRING:[access][referrer]} %{QUOTEDSTRING:[access][agent]} \"%{HOSTPORT:[access][remote_ip_and_port]}\" \"%{HOSTPORT:[access][upstream_ip_and_port]}\" %{GREEDYDATA:router_keys}" }
       tag_on_failure => ["_routerparsefailure"]
       add_tag => ["gorouter"]
+      # Remove syslog_msg if parsing is successful
+      remove_field => [ "syslog_msg" ]
+      tag_on_failure => ["_appjsonparsefailure"]
     }
     # replace @timestamp field with the one from router access log
     date {
@@ -70,6 +73,8 @@ filter {
       add_tag => ["app"]
       # Do not write error in the logstash log if the json is malformed. The field is still stored as a string.
       skip_on_invalid_json => true
+      # Remove syslog_msg if parsing is successful
+      remove_field => [ "syslog_msg" ]
     }
     mutate { replace => { "type" => "application" } }
 
@@ -94,11 +99,17 @@ filter {
     copy => { "[cf][app]" => "application" }
   }
 
+  # Rename syslog_msg as message if it wasn't parsed properly
+  if ([syslog_msg]) and !([message]) {
+    mutate {
+      rename => [ "syslog_msg", "message" ]
+    }
+  }
+
   if !("_syslogparsefailure" in [tags]) and !("_grokparsefailure_sysloginput" in [tags]) {
-    # if we successfully parsed syslog, replace the message and source_host fields
+    # if we successfully parsed syslog, replace source_host field
     mutate {
       rename => [ "syslog_host", "source_host" ]
-      remove_field => ["syslog_msg" ]
     }
   }
 }
