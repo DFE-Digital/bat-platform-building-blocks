@@ -44,7 +44,6 @@ filter {
       add_tag => ["gorouter"]
       # Remove syslog_msg if parsing is successful
       remove_field => [ "syslog_msg" ]
-      tag_on_failure => ["_appjsonparsefailure"]
     }
     # replace @timestamp field with the one from router access log
     date {
@@ -75,6 +74,7 @@ filter {
       skip_on_invalid_json => true
       # Remove syslog_msg if parsing is successful
       remove_field => [ "syslog_msg" ]
+      tag_on_failure => ["_appjsonparsefailure"]
     }
     mutate { replace => { "type" => "application" } }
 
