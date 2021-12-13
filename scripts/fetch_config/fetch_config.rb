@@ -40,6 +40,7 @@ def usage
       tf-shell-env-var: Terraform environment variables TF_VAR_KEY=VALUE (Not for nested variables)
       yaml: Yaml
       json: Raw json (single line)
+    -i (--ignore-missing-source): Ignore missing sources
     -c (--confirm): Ask for confirmation before writing to destination
     -v (--verbose): verbose output
   EOF
@@ -185,7 +186,7 @@ def get_key_vault_token
   JSON.load(token_json)["accessToken"]
 end
 
-def pull_azure_key_vault_secret(azure_key_vault_secrets)
+def pull_azure_key_vault_secret(azure_key_vault_secrets, ignore_missing_source)
   return {} unless azure_key_vault_secrets
   @log.debug 'Fetching Azure key vault secrets ' + azure_key_vault_secrets.to_s
   key_vault_access_token = get_key_vault_token
@@ -202,29 +203,41 @@ def pull_azure_key_vault_secret(azure_key_vault_secrets)
       http.request(req)
     end
 
-    secret_hash = process_azure_response!(res.body)
-    secret_value = secret_hash["value"]
+    secret_hash = process_azure_response(res, ignore_missing_source)
+    next if secret_hash.nil?
 
     begin
+      secret_value = secret_hash['value']
       parameter_map = YAML.load(secret_value)
     rescue Psych::SyntaxError => e
       puts "Error: Syntax error in Azure key vault secret " + azure_key_vault_secret
       raise e
     end
+
     config_map.update parameter_map
   end
-  config_map
+
+  config_map || nil
 end
 
-def process_azure_response!(body)
-  json_response = JSON.parse(body)
+def process_azure_response(res, ignore_missing_source)
+  json_response = JSON.parse(res.body)
 
-  if json_response.key? "error"
-    @log.error("Error found in Azure response: #{json_response['error']['code']}\n#{json_response['error']['message']}")
-    raise "Azure response contained error"
+  case res
+  when Net::HTTPNotFound
+
+    if ignore_missing_source
+      @log.debug('Recieved a HTTPNotFound response. Continuing')
+      nil
+    else
+      raise "#{res.code} #{Net::HTTPResponse::CODE_TO_OBJ[res.code]}\n#{json_response['error']['message']}\nIf you are trying to create a new secret then you will need to use the -i flag to ignore missing source secrets!"
+    end
+  when !Net::HTTPSuccess
+    @log.error("An error occured while processing the request: #{json_response['error']['code']}\n#{json_response['error']['message']}")
+    raise 'Azure response contained error'
+  else
+    json_response
   end
-
-  json_response
 end
 
 def make_tf_vars_map(config_map)
@@ -261,8 +274,9 @@ end
 
 def open_in_editor(config_map)
   new_map = {}
+  value = config_map.empty? ? nil : config_map
   Tempfile.create { |f|
-    YAML.dump(config_map, f)
+    YAML.dump(value, f)
     f.rewind
     cmd = "#{EDITOR} #{Shellwords.escape(f.path)}"
     @log.debug "Editing config file: #{cmd}"
@@ -292,6 +306,7 @@ opts = GetoptLong.new(
   [ '--edit', '-e', GetoptLong::NO_ARGUMENT ],
   [ '--destination', '-d', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--format', '-f', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--ignore-missing-source', '-i', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--confirm', '-c', GetoptLong::NO_ARGUMENT ],
   [ '--verbose', '-v', GetoptLong::NO_ARGUMENT ]
 )
@@ -301,6 +316,7 @@ edit = false
 destination = nil
 output_format = nil
 command = nil
+ignore_missing_source = false
 confirm = false
 
 opts.each do |opt, arg|
@@ -319,6 +335,8 @@ opts.each do |opt, arg|
   when '--format'
     usage unless ALLOWED_FORMATS.include? arg
     output_format = arg
+  when '--ignore-missing-source'
+    ignore_missing_source = true
   when '--confirm'
     confirm = true
   when '--verbose'
@@ -345,7 +363,8 @@ config_map = {}
 config_map.update(pull_ssm_parameters sources['aws-ssm-parameter'])
 config_map.update(pull_ssm_parameter_paths sources['aws-ssm-parameter-path'])
 config_map.update(read_from_yaml_files sources['yaml-file'])
-config_map.update(pull_azure_key_vault_secret sources['azure-key-vault-secret'])
+azure_key_vault_map = pull_azure_key_vault_secret(sources['azure-key-vault-secret'], ignore_missing_source)
+config_map.update(azure_key_vault_map)
 
 ##### Transform #####
 config_map = sort_by_key(config_map)
