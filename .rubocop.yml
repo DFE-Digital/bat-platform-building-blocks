@@ -1,0 +1,11 @@
+inherit_from:
+  - ./rubocop/layout.yml
+  - ./rubocop/lint.yml
+  - ./rubocop/style.yml
+  - ./rubocop/metrics.yml
+
+AllCops:
+  NewCops: enable
+
+Bundler/OrderedGems:
+  Enabled: false
