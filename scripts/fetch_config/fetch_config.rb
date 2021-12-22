@@ -252,7 +252,7 @@ end
 def stringify(config_map)
   @log.debug 'Converting non string values to strings'
 
-  config_map.transform_keys do |k|
+  config_map.transform_keys do |k,v|
     if config_map[v].is_a?(Hash) || config_map[v].is_a?(Array)
       error_exit "Error: This format does not accept nested variables: #{k}: #{config_map(v)}"
     end
@@ -265,7 +265,7 @@ def sort_by_key(config_map)
   config_map.sort.to_h
 end
 
-def env_var_list
+def env_var_list(config_map)
   shell_template = <<~TEMPLATE
     <% for k,v in config_map %><%= k %>=<%= v %>
     <% end %>
