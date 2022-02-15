@@ -85,14 +85,15 @@ def run_command_with_env(config_map, command)
 end
 
 def push_to_azure_key_vault_secret(output_string, azure_key_vault_secret)
-  @log.debug "Updating Azure key vault secrets #{azure_key_vault_secret}"
+  secret_expiry = DateTime.now.next_year(2).strftime("%FT%T.%LZ")
+  @log.debug "Updating Azure key vault secrets #{azure_key_vault_secret} with expiry #{secret_expiry}"
   key_vault_access_token = key_vault_token
 
   key_vault, secret_name = azure_key_vault_secret.split('/')
   vault_base_url = "https://#{key_vault}.vault.azure.net"
 
   uri = URI("#{vault_base_url}/secrets/#{secret_name}?api-version=7.1")
-  body = { 'value' => output_string }.to_json
+  body = { 'value' => output_string, 'exp' => secret_expiry }.to_json
 
   req = Net::HTTP::Put.new(uri)
   req['Authorization'] = "Bearer #{key_vault_access_token}"
