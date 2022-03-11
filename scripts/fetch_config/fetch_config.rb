@@ -252,13 +252,13 @@ end
 def stringify(config_map)
   @log.debug 'Converting non string values to strings'
 
-  config_map.transform_keys do |k,v|
-    if config_map[v].is_a?(Hash) || config_map[v].is_a?(Array)
-      error_exit "Error: This format does not accept nested variables: #{k}: #{config_map(v)}"
+  config_map.map do |k, v|
+    if v.is_a?(Hash) || v.is_a?(Array)
+      error_exit "Error: This format does not accept nested variables: #{k}: #{v}"
     end
-    v = config_map[v].to_s unless v.is_a? String
+    v = v.to_s unless v.is_a? String
     [k, v]
-  end
+  end.to_h
 end
 
 def sort_by_key(config_map)
