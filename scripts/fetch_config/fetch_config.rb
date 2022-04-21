@@ -11,7 +11,7 @@ require 'shellwords'
 require 'English'
 
 ALLOWED_SOURCES = ['aws-ssm-parameter', 'aws-ssm-parameter-path', 'yaml-file', 'azure-key-vault-secret'].freeze
-ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet', 'azure-key-vault-secret'].freeze
+ALLOWED_DESTINATION = ['stdout', 'file', 'command', 'quiet', 'azure-key-vault-secret', 'aws-ssm-parameter'].freeze
 ALLOWED_FORMATS = ['hash', 'shell-env-var', 'tf-shell-env-var', 'yaml', 'json'].freeze
 EDITOR = ENV.fetch('VISUAL', ENV.fetch('EDITOR', 'vi'))
 
@@ -36,6 +36,7 @@ def usage
         quiet : No output (Validates input)
         azure-key-vault-secret[:<keyvault-name/secret-name>] : Secret in Azure key vault
         if keyvault-name and secret-name are not specified, the values are read from 'key_vault_name' and 'key_vault_app_secret_name' environment variables
+        aws-ssm-parameter:<parameter-name> aws-ssm-parameter name in AWS SSM Parameter store
       -f (--format): Output format
         hash (default): Raw ruby hash {KEY => VALUE}
         shell-env-var: Standard shell environment variables KEY=VALUE (Not for nested variables)
@@ -110,6 +111,30 @@ def push_to_azure_key_vault_secret(output_string, azure_key_vault_secret)
     message << "Response: #{res.code} #{Net::HTTPResponse::CODE_TO_OBJ[res.code]} #{res.body}"
     raise message
   end
+end
+
+def push_to_aws_ssm_parameter(output_string, aws_ssm_parameter)
+  @log.debug "Updating AWS SSM secret #{aws_ssm_parameter}"
+
+  require 'aws-sdk-ssm'
+  ssm_client = Aws::SSM::Client.new(region: 'eu-west-2')
+
+  response = ssm_client.put_parameter(
+    {
+      name: aws_ssm_parameter,
+      value: output_string,
+      type: 'SecureString',
+      overwrite: true
+    }
+  )
+
+  param_version = response.version
+  if param_version > 1
+    @log.debug "Parameter #{aws_ssm_parameter} updated successfully. New version: #{response.version}"
+  else
+    raise "Failed updating parameter #{aws_ssm_parameter}"
+  end
+
 end
 
 def pull_ssm_parameters(parameters)
@@ -404,4 +429,6 @@ when 'command'
   run_command_with_env(config_map, destination[:parameter])
 when 'azure-key-vault-secret'
   push_to_azure_key_vault_secret(output_string, destination[:parameter])
+when 'aws-ssm-parameter'
+  push_to_aws_ssm_parameter(output_string, destination[:parameter])
 end
